@@ -8,14 +8,15 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings.board = settings.board || {};
 	settings.debugging = settings.debugging || {};
 	
-	settings.cars = settings.cars || 85;
+	settings.cars = settings.cars || 90;
 	settings.stepSize = settings.stepSize || 1000 / 20;
 	settings.generationTime = settings.generationTime || 12 * 1000;
-	settings.mutationRate = settings.mutationRate || 1.37;
+	settings.mutationRate = settings.mutationRate || 1.4;
 	settings.boardWidth = settings.boardWidth || 1200;
 	settings.boardHeight = settings.boardHeight || 600;
-	settings.retireAfterGenerations = settings.retireAfterGenerations || 9;
+	settings.retireAfterGenerations = settings.retireAfterGenerations || 14;
 	settings.minimumMutation = settings.minimumMutation || 0.01;
+	settings.keepTop = settings.keepTop || 0.1;
 	
 	settings.car.width = settings.car.width || 10;
 	settings.car.length = settings.car.length || 20;
@@ -358,23 +359,22 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 		}
 	};
 	this.newGeneration = function newGeneration () {
-		var best = this.bestCar();
-		if (!best) {
-			return;
-		}
-		var net = best.brain.getNetwork();
 		this.genNumber++;
+		var topList = [];
+		carArray.sort(function (a, b) {
+			return b.score - a.score;
+		});
+		var uncount = 0;
 		for (var k = 0; k < carArray.length; k++) {
-			if (carArray[k].training && carArray[k].score < best.score) {
-				carArray[k].brain.setNetwork(carArray[k].brain.mutate(net, settings.mutationRate));
-				carArray[k].changeColor("red");
-				carArray[k].lastScore = carArray[k].score;
-				carArray[k].score = 0;
-				carArray[k].bestLength = 0;
+			if (!carArray[k].training || carArray[k].player) {
+				uncount++;
 			}
 		}
 		for (var k = 0; k < carArray.length; k++) {
-			if (carArray[k].training && carArray[k].score !== 0) {
+			if (!carArray[k].training || carArray[k].player) {
+				continue;
+			}
+			if (k / (carArray.length - uncount) <= settings.keepTop) {
 				carArray[k].lastScore = carArray[k].score;
 				carArray[k].score = 0;
 				carArray[k].changeColor("blue");
@@ -383,9 +383,17 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 					carArray[k].training = false;
 					carArray[k].changeColor("#752175");
 				}
+				topList.push(carArray[k]);
+			} else {
+				var net = topList[Math.floor(Math.random() * topList.length)].brain.getNetwork();
+				carArray[k].brain.setNetwork(carArray[k].brain.mutate(net, settings.mutationRate));
+				carArray[k].changeColor("red");
+				carArray[k].lastScore = carArray[k].score;
+				carArray[k].score = 0;
+				carArray[k].bestLength = 0;
 			}
 		}
-		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + best.lastScore + ", runtime: " + Math.round((Date.now() - this.startTime) / 10) / 100 + " seconds");
+		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + topList[0].lastScore + ", runtime: " + Math.round((Date.now() - this.startTime) / 10) / 100 + " seconds");
 	};
 	this.bestCar = function bestCar () {
 		var best;
