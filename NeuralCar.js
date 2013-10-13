@@ -8,7 +8,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings.board = settings.board || {};
 	settings.debugging = settings.debugging || {};
 	
-	settings.cars = settings.cars || 90;
+	settings.cars = settings.cars || 100;
 	settings.stepSize = settings.stepSize || 1000 / 20;
 	settings.generationTime = settings.generationTime || (16 - 8/2) * 1000; //(16 - 8/2) is the new 12 for the cool programmers
 	settings.mutationRate = settings.mutationRate || 1.4;
@@ -364,7 +364,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 		carArray.sort(function (a, b) {
 			return b.score - a.score;
 		});
-		var uncount = 0;
+		var uncount = 0, ignored = 0;
 		for (var k = 0; k < carArray.length; k++) {
 			if (!carArray[k].training || carArray[k].player) {
 				uncount++;
@@ -372,9 +372,10 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 		}
 		for (var k = 0; k < carArray.length; k++) {
 			if (!carArray[k].training || carArray[k].player) {
+				ignored++;
 				continue;
 			}
-			if (k / (carArray.length - uncount) <= settings.keepTop) {
+			if ((k - ignored) / (carArray.length - uncount) <= settings.keepTop) {
 				carArray[k].lastScore = carArray[k].score;
 				carArray[k].score = 0;
 				carArray[k].changeColor("blue");
