@@ -7,6 +7,7 @@ Todo:
 =====
 
 	1) Add gui for settings
-	2) Better maps
+	2) Add console gui
 	3) Tweak values for better learning
-	4) Optimize for speed
+	4) Better maps
+	5) Optimize for speed

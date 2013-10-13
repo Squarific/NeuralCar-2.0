@@ -8,12 +8,14 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings.board = settings.board || {};
 	settings.debugging = settings.debugging || {};
 	
-	settings.cars = settings.cars || 50;
+	settings.cars = settings.cars || 60;
 	settings.stepSize = settings.stepSize || 1000 / 20;
-	settings.generationTime = settings.generationTime || 10 * 1000;
-	settings.mutationRate = 1.2;
-	settings.boardWidth = 1200;
-	settings.boardHeight = 600;
+	settings.generationTime = settings.generationTime || 12 * 1000;
+	settings.mutationRate = settings.mutationRate || 1.3;
+	settings.boardWidth = settings.boardWidth || 1200;
+	settings.boardHeight = settings.boardHeight || 600;
+	settings.retireAfterGenerations = settings.retireAfterGenerations || 9;
+	settings.minimumMutation = settings.minimumMutation || 0.2;
 	
 	settings.car.width = settings.car.width || 10;
 	settings.car.length = settings.car.length || 20;
@@ -21,8 +23,8 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings.car.maxSpeed = settings.car.maxSpeed || 0.06;
 	settings.car.maxAcceleration = settings.maxAcceleration || 0.00005;
 	settings.car.maxTurnAngle = settings.car.maxTurnAngle || Math.PI / 1700;
-	settings.car.averageWidth = 2;
-	settings.car.averageHeight = 4;
+	settings.car.averageWidth = settings.car.averageWidth || 2;
+	settings.car.averageHeight = settings.car.averageHeight || 4;
 	
 	settings.ai.type = settings.ai.type || "blockVision";
 	settings.ai.blockLength = settings.ai.blockLength || 80;
@@ -35,8 +37,10 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings.board.streetWidth = 4.5;
 
 	settings.brain.inputStructure = settings.brain.inputStructure || 24;
-	settings.brain.structure = settings.brain.structure || [15];
+	settings.brain.structure = settings.brain.structure || [26];
 	settings.brain.structure.push(2);
+	
+	this.runSpeed = 1;
 	
 	this.console = new SQUARIFIC.Console();
 	this.board = new SQUARIFIC.Board(board, settings, this);
@@ -53,12 +57,12 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	this.step = function neuralCarStep (stepSize) {
 		var changed = false;
 		this.screen.clearFrontOnNextChange();
-		var timeDifference = Date.now() - this.lastUpdate;
+		var timeDifference = (Date.now() - this.lastUpdate) * this.runSpeed;
 		while (timeDifference - stepSize > 0) {
 			changed = true;
 			this.carCollection.step(stepSize, this.board);
 			timeDifference -= stepSize;
-			this.lastUpdate += stepSize;
+			this.lastUpdate += (stepSize / this.runSpeed);
 		}
 		if (changed) {
 			this.screen.drawCars(this.carCollection.getCars());
@@ -67,6 +71,10 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	}.bind(this, settings.stepSize);
 	setInterval(this.step, 2000);
 	requestAnimationFrame(this.step);
+	
+	this.getSettings = function () {
+		return settings;
+	};
 };
 
 SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
@@ -123,10 +131,10 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 				if (network[k][i].bias === 0) {
 					network[k][i].bias = Math.random();
 				}
-				network[k][i].bias *= sign * Math.random() * rate;
+				network[k][i].bias = Math.max(network[k][i].bias, settings.minimumMutation) * sign * Math.random() * rate;
 				for (var l = 0; l < network[k][i].weights.length; l++) {
 					sign = Math.random() < 0.5 ? -1 : 1;
-					network[k][i].weights[l] *= sign * Math.random() * rate;
+					network[k][i].weights[l] = Math.max(network[k][i].weights[l], settings.minimumMutation) * sign * Math.random() * rate;
 				}
 			}
 		}
@@ -251,6 +259,7 @@ SQUARIFIC.PlayerInput = function PlayerInput () {
 
 SQUARIFIC.Car = function Car (brain, settings) {
 	this.score = 0;
+	this.bestLength = 0;
 	this.lastScore = 0;
 	this.velocity = 0;
 	this.maxAcceleration = settings.car.maxAcceleration;
@@ -270,6 +279,15 @@ SQUARIFIC.Car = function Car (brain, settings) {
 	this.step = function carStep (stepSize, board) {
 		var inputs = brain.getInput(this, board);
 		this.lastVelocity = this.velocity;
+		
+		if (inputs.acceleration === 0) {
+			if (this.velocity > 0) {
+				inputs.acceleration = -0.05;
+			} else {
+				inputs.acceleration = 0.05;
+			}
+		}
+		
 		this.velocity += inputs.acceleration * this.maxAcceleration * stepSize;
 		this.angle += inputs.turning * this.maxTurnAngle * stepSize;
 		
@@ -319,6 +337,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 	this.add = function addCar (car, training) {
 		carArray.push(car);
 		car.training = car.training || training;
+		car.notPlayer = car.notPlayer || car.training || training;
 	};
 	this.step = function carCollectionStep (stepSize, board) {
 		for (var k = 0; k < carArray.length; k++) {
@@ -331,6 +350,9 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 	};
 	this.newGeneration = function newGeneration () {
 		var best = this.bestCar();
+		if (!best) {
+			return;
+		}
 		var net = best.brain.getNetwork();
 		this.genNumber++;
 		for (var k = 0; k < carArray.length; k++) {
@@ -339,6 +361,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 				carArray[k].changeColor("red");
 				carArray[k].lastScore = carArray[k].score;
 				carArray[k].score = 0;
+				carArray[k].bestLength = 0;
 			}
 		}
 		for (var k = 0; k < carArray.length; k++) {
@@ -346,6 +369,11 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 				carArray[k].lastScore = carArray[k].score;
 				carArray[k].score = 0;
 				carArray[k].changeColor("blue");
+				carArray[k].bestLength++;
+				if (carArray[k].bestLength > settings.retireAfterGenerations) {
+					carArray[k].training = false;
+					carArray[k].changeColor("#752175");
+				}
 			}
 		}
 		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + best.lastScore + ", runtime: " + Math.round((Date.now() - this.startTime) / 10) / 100 + " seconds");
@@ -397,7 +425,7 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 				if ((Math.floor(x / streetWidth) % 7) === 2 || (Math.floor(y / streetWidth) % 4) === 2) {
 					board[x][y] = 1;
 				} else {
-					board[x][y] = 0.4;
+					board[x][y] = 0.25; //grass
 				}
 			}
 		}
