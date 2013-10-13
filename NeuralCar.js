@@ -8,21 +8,21 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings.board = settings.board || {};
 	settings.debugging = settings.debugging || {};
 	
-	settings.cars = settings.cars || 60;
+	settings.cars = settings.cars || 85;
 	settings.stepSize = settings.stepSize || 1000 / 20;
 	settings.generationTime = settings.generationTime || 12 * 1000;
-	settings.mutationRate = settings.mutationRate || 1.3;
+	settings.mutationRate = settings.mutationRate || 1.37;
 	settings.boardWidth = settings.boardWidth || 1200;
 	settings.boardHeight = settings.boardHeight || 600;
 	settings.retireAfterGenerations = settings.retireAfterGenerations || 9;
-	settings.minimumMutation = settings.minimumMutation || 0.2;
+	settings.minimumMutation = settings.minimumMutation || 0.01;
 	
 	settings.car.width = settings.car.width || 10;
 	settings.car.length = settings.car.length || 20;
 	settings.car.color = settings.car.color || "red";
-	settings.car.maxSpeed = settings.car.maxSpeed || 0.06;
-	settings.car.maxAcceleration = settings.maxAcceleration || 0.00005;
-	settings.car.maxTurnAngle = settings.car.maxTurnAngle || Math.PI / 1700;
+	settings.car.maxSpeed = settings.car.maxSpeed || 0.075;
+	settings.car.maxAcceleration = settings.maxAcceleration || 0.00004;
+	settings.car.maxTurnAngle = settings.car.maxTurnAngle || Math.PI / 1800;
 	settings.car.averageWidth = settings.car.averageWidth || 2;
 	settings.car.averageHeight = settings.car.averageHeight || 4;
 	
@@ -131,10 +131,10 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 				if (network[k][i].bias === 0) {
 					network[k][i].bias = Math.random();
 				}
-				network[k][i].bias = Math.max(network[k][i].bias, settings.minimumMutation) * sign * Math.random() * rate;
+				network[k][i].bias += Math.max(network[k][i].bias, settings.minimumMutation) * sign * Math.random() * rate;
 				for (var l = 0; l < network[k][i].weights.length; l++) {
 					sign = Math.random() < 0.5 ? -1 : 1;
-					network[k][i].weights[l] = Math.max(network[k][i].weights[l], settings.minimumMutation) * sign * Math.random() * rate;
+					network[k][i].weights[l] += Math.max(network[k][i].weights[l], settings.minimumMutation) * sign * Math.random() * rate;
 				}
 			}
 		}
@@ -280,15 +280,24 @@ SQUARIFIC.Car = function Car (brain, settings) {
 		var inputs = brain.getInput(this, board);
 		this.lastVelocity = this.velocity;
 		
-		if (inputs.acceleration === 0) {
+		if ((inputs.acceleration !== 1 && inputs.acceleration !== -1) && this.velocity !== 0) {
 			if (this.velocity > 0) {
-				inputs.acceleration = -0.05;
+				inputs.acceleration = -.4;
+				if (this.velocity + inputs.acceleration * this.maxAcceleration * stepSize < 0) {
+					this.velocity = 0;
+					inputs.acceleration = 0;
+				}
 			} else {
-				inputs.acceleration = 0.05;
+				inputs.acceleration = .4;
+				if (this.velocity + inputs.acceleration * this.maxAcceleration * stepSize > 0) {
+					this.velocity = 0;
+					inputs.acceleration = 0;
+				}
 			}
 		}
 		
 		this.velocity += inputs.acceleration * this.maxAcceleration * stepSize;
+		
 		this.angle += inputs.turning * this.maxTurnAngle * stepSize;
 		
 		var average = board.average(this.x, this.y, this.angle, this.image.width, this.image.height, settings.car.averageWidth, settings.car.averageHeight);
@@ -343,7 +352,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 		for (var k = 0; k < carArray.length; k++) {
 			carArray[k].step(stepSize, board);
 		}
-		if (Date.now() - this.lastGenerationTime > settings.generationTime) {
+		if (Date.now() - this.lastGenerationTime > settings.generationTime / neuralCarInstance.runSpeed) {
 			this.newGeneration();
 			this.lastGenerationTime = Date.now();
 		}
@@ -370,7 +379,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 				carArray[k].score = 0;
 				carArray[k].changeColor("blue");
 				carArray[k].bestLength++;
-				if (carArray[k].bestLength > settings.retireAfterGenerations) {
+				if (carArray[k].bestLength > settings.retireAfterGenerations && carArray[k].lastScore !== 0) {
 					carArray[k].training = false;
 					carArray[k].changeColor("#752175");
 				}
