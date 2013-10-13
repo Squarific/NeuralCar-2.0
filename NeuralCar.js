@@ -4,23 +4,46 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings = settings || {};
 	settings.car = settings.car || {};
 	settings.brain = settings.brain || {};
+	settings.board = settings.board || {};
+	settings.debugging = settings.debugging || {};
 	
 	settings.cars = settings.cars || 10;
-	settings.stepSize = settings.stepSize || 1000 / 60;
+	settings.stepSize = settings.stepSize || 1000 / 20;
 	settings.generationTime = settings.generationTime || 10 * 1000;
 	
 	settings.car.width = settings.car.width || 10;
 	settings.car.length = settings.car.length || 20;
 	settings.car.color = settings.car.color || "red";
+	settings.car.maxSpeed = settings.car.maxSpeed || 0.05;
+	settings.car.maxAcceleration = settings.maxAcceleration || 0.001;
+	settings.car.maxTurnAngle = settings.car.maxTurnAngle || Math.PI / 1500;
+	settings.car.averageWidth = 2;
+	settings.car.averageHeight = 4;
 	
+	settings.board.streetWidth = 5;
+	
+	settings.debugging.drawAveragePixels = settings.debugging.drawAveragePixels;
+	
+	settings.brain.inputStructure = 4; // How many inputs there are.
 	settings.brain.structure = settings.brain.structure || [13];
+	settings.brain.structure.push(4);
 	
-	this.board = new SQUARIFIC.Board(board, settings);
-	this.trainer = new SQUARIFIC.CarCollection([], settings);
+	this.board = new SQUARIFIC.Board(board, settings, this);
+	this.carCollection = new SQUARIFIC.CarCollection([], settings);
 	this.screen = new SQUARIFIC.Screen(backCanvas, frontCanvas);
 	
 	this.screen.drawBackground(this.board);
+	this.carCollection.add(new SQUARIFIC.Car(new SQUARIFIC.PlayerInput(), settings));
+	
+	this.lastUpdate = Date.now();
 	this.step = function neuralCarStep (stepSize) {
+		var timeDifference = Date.now() - this.lastUpdate;
+		while (timeDifference - stepSize > 0) {
+			this.carCollection.step(stepSize, this.board);
+			timeDifference -= stepSize;
+			this.lastUpdate += stepSize;
+		}
+		this.screen.drawCars(this.carCollection.getCars());
 		requestAnimationFrame(this.step);
 	}.bind(this, settings.stepSize);
 	requestAnimationFrame(this.step);
@@ -28,7 +51,27 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 
 SQUARIFIC.Brain = function Brain (network, settings) {
 	function createNetwork () {
-		
+		var net = [];
+		for (var k = 0; k < settings.brain.structure; k++) {
+			net[k] = [];
+			for (var i = 0; i < settings.brain.structure[k]; i++) {
+				var sign = Math.random() < 0.5 ? -1 : 1;
+				net[k][i] = {
+					bias: sign * Math.random(),
+					weights: []
+				};
+				if (typeof settings.brain.structure[k - 1] === "number") {
+					var weights = settings.brain.structure[k - 1];
+				} else {
+					weights = settings.brain.inputStructure;
+				}
+				sign = Math.random() < 0.5 ? -1 : 1;
+				for (var l = 0; l < weigths; l++) {
+					net[k][i].weights[l] = sign * Math.random();
+				}
+			}
+		}
+		return net;
 	}
 	if (typeof network !== "object") {
 		network = createNetwork(settings);
@@ -37,19 +80,86 @@ SQUARIFIC.Brain = function Brain (network, settings) {
 		return network;
 	};
 	this.mutate = function mutate (network, rate) {
-		
+		for (var k = 0; k < network.length; k++) {
+			for (var i = 0; i < network[k].length; i++) {
+				var sign = Math.random() < 0.5 ? -1 : 1;
+				if (network[k][i].bias === 0) {
+					network[k][i].bias = Math.random();
+				}
+				network[k][i].bias *= sign * Math.random() * rate;
+				for (var l = 0; l < network[k][i].weigths.length; l++) {
+					sign = Math.random() < 0.5 ? -1 : 1;
+					net[k][i].weights[l] *= sign * Math.random() * rate;
+				}
+			}
+		}
+		return network;
 	};
+	this.getInput = function getInput (car, board) {
+		var inputs = [
+			
+		];
+		return {
+			acceleration:0,
+			turning: 1
+		};
+	};
+};
+
+SQUARIFIC.PlayerInput = function PlayerInput () {
+	this.keysPressed = {};
+	this.inputs = {
+		acceleration: 0,
+		turning: 0
+	};
+	this.getInput = function getInput () {
+		return this.inputs;
+	};
+	this.update = function update () {
+		this.inputs.acceleration = 0;
+		this.inputs.turning = 0;
+		for (var key in this.keysPressed) {
+			if (this.keysPressed.hasOwnProperty(key) && this.keysPressed[key]) {
+				switch (parseInt(key)) {
+					case 37:
+						this.inputs.turning -= 1;
+					break;
+					case 38:
+						this.inputs.acceleration += 1;
+					break;
+					case 39:
+						this.inputs.turning += 1;
+					break;
+					case 40:
+						this.inputs.acceleration -= 1;
+					break;
+				}
+			}
+		}
+	};
+	this.keydown = function keydown (event) {
+		this.keysPressed[event.keyCode] = true;
+		this.update();
+		event.preventDefault();
+	};
+	this.keyup = function keyup (event) {
+		this.keysPressed[event.keyCode] = false;
+		this.update();
+	};
+	document.addEventListener("keydown", this.keydown.bind(this));
+	document.addEventListener("keyup", this.keyup.bind(this));
 };
 
 SQUARIFIC.Car = function Car (brain, settings) {
 	this.score = 0;
 	this.lastScore = 0;
 	this.velocity = 0;
-	this.acceleration = 0;
+	this.maxAcceleration = settings.car.maxAcceleration;
+	this.maxTurnAngle = settings.car.maxTurnAngle;
+	this.maxSpeed = settings.car.maxSpeed;
 	this.x = Math.random() * settings.boardWidth;
 	this.y = Math.random() * settings.boardHeight;
-	this.directionX = 0;
-	this.directionY = 0;
+	this.angle = Math.random() * 2 * Math.PI;
 	this.color = settings.car.color || "red";
 	
 	this.image = document.createElement("canvas");
@@ -57,34 +167,57 @@ SQUARIFIC.Car = function Car (brain, settings) {
 	this.image.height = settings.car.length;
 	
 	this.step = function carStep (stepSize, board) {
+		var inputs = brain.getInput(this, board);
+		this.lastVelocity = this.velocity;
+		this.velocity += inputs.acceleration * this.maxAcceleration * stepSize;
+		this.angle += inputs.turning * this.maxTurnAngle * stepSize;
 		
+		var average = board.average(this.x, this.y, this.angle, this.image.width, this.image.height, settings.car.averageWidth, settings.car.averageHeight);
+		if (Math.abs(this.velocity) > average * this.maxSpeed) {
+			this.velocity = (this.velocity / Math.abs(this.velocity)) * average * this.maxSpeed;
+		}
+		if (this.velocity !== 0 && this.velocity !== this.lastVelocity) {
+			console.log(this.velocity, inputs.acceleration);
+		}
+		
+		this.x += this.velocity * Math.sin(this.angle) * stepSize;
+		this.y -= this.velocity * Math.cos(this.angle) * stepSize;
+		
+		this.x = board.ensureCoordInRange(this.x, board.width);
+		this.y = board.ensureCoordInRange(this.y, board.height);
+
+		this.score += this.velocity;
 	};
 	
 	this.changeColor = function changeColor (color) {
 		this.color = color;
+		this.draw();
 	};
 	
 	this.draw = function carDraw () {
 		var ctx = this.image.getContext("2d");
 		
 		ctx.beginPath();
-		ctx.drawRect(0, 0, settings.car.width, settings.car.height);
+		ctx.rect(0, 0, this.image.width, this.image.height);
 		ctx.fillStyle = this.color;
 		ctx.fill();
-		
+
 		ctx.beginPath();
-		ctx.drawRect(0, 0, settings.car.width / 4, Math.min(settings.car.height / 8, 40));
-		ctx.drawRect(settings.car.width - settings.car.width / 4, 0, settings.car.width / 4, Math.min(settings.car.height / 8, 40));
+		ctx.rect(0, 0, this.image.width / 4, Math.min(this.image.height / 8, 40));
+		ctx.rect(this.image.width - this.image.width / 4, 0, this.image.width / 4, Math.min(this.image.height / 8, 40));
 		ctx.fillStyle = "yellow";
 		ctx.fill();
 	};
+	
+	this.draw();
 };
 
 SQUARIFIC.CarCollection = function CarCollection (carArray, settings) {
 	carArray = carArray || [];
 	settings.cars = settings.cars || 10;
-	this.add = function addCar (car) {
+	this.add = function addCar (car, training) {
 		carArray.push(car);
+		car.training = car.training || training;
 	};
 	this.step = function carCollectionStep (stepSize, board) {
 		for (var k = 0; k < carArray.length; k++) {
@@ -94,32 +227,34 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings) {
 	this.removeWorst = function removeWorst () {
 		var worst;
 		for (var k = 0; k < carArray.length; k++) {
-			if (typeof worst !== "number" || carArray[worst].lastScore > carArray[k].lastScore) {
+			if ((typeof worst !== "number" || carArray[worst].lastScore > carArray[k].lastScore) && carArray[k].training) {
 				worst = k;
 			}
 		}
-		carArray.splice(k, 1);
+		if (typeof k === "number") {
+			carArray.splice(k, 1);
+		}
 	};
 	this.getCars = function getCars () {
 		return carArray;
 	};
 	for (var k = 0; k < settings.cars; k++) {
-		carArray.push(new SQUARIFIC.Car(new SQUARIFIC.Brain(undefined, settings), settings));
+		this.add(new SQUARIFIC.Car(new SQUARIFIC.Brain(undefined, settings), settings), true);
 	}
 };
 
-SQUARIFIC.Board = function Board (board, settings) {
+SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 	function createBoard (settings) {
 		var board = [];
 		
 		settings = settings || {};
-		board.width = board.width ||settings.boardWidth || 800;
-		board.height = board.height || settings.boardHeight || 400;
+		board.width = board.width ||settings.boardWidth || 960;
+		board.height = board.height || settings.boardHeight || 600;
 		settings.car = settings.car || {};
-		streetWidth = settings.car.width * 3 || 60;
+		streetWidth = settings.car.width * settings.board.streetWidth || 60;
 		
 		settings.board = settings.board || {};
-		settings.board.colors = settings.board.colors || [{max: 0.3, r: 51, g: 133, b: 33}, {max: 1, r: 145, g: 140, b: 122}];
+		settings.board.colors = settings.board.colors || [{max: 0.5, r: 51, g: 133, b: 33}, {max: 1, r: 145, g: 140, b: 122}];
 		
 		for (var x = 0; x < board.width; x++) {
 			for (var y = 0; y < board.height; y++) {
@@ -127,7 +262,7 @@ SQUARIFIC.Board = function Board (board, settings) {
 				if ((Math.floor(x / streetWidth) % 7) === 2 || (Math.floor(y / streetWidth) % 4) === 2) {
 					board[x][y] = 1;
 				} else {
-					board[x][y] = 0.2;
+					board[x][y] = 0.5;
 				}
 			}
 		}
@@ -140,8 +275,10 @@ SQUARIFIC.Board = function Board (board, settings) {
 	}
 	
 	this.board = board;
-	this.width = board.width || board.length || settings.boardWidth;
-	this.height = board.height || board[0].length || settings.boardHeight;
+	this.width = board.width || board.length;
+	this.height = board.height || board[0].length;
+	settings.boardWidth = this.width;
+	settings.boardHeight = this.height;
 	
 	this.getXY = function getXY (x, y) {
 		x = Math.abs(Math.round(x));
@@ -155,6 +292,60 @@ SQUARIFIC.Board = function Board (board, settings) {
 		return 0;
 	};
 	
+	this.average = function average (xA, yA, angle, width, height, xSteps, ySteps, debug) {
+		var pixels = [];
+		if (debug) {
+			console.log("debug");
+		}
+		xSteps = Math.round(Math.abs(xSteps)) || 2;
+		ySteps = Math.round(Math.abs(ySteps)) || 2;
+		var xStep = Math.abs(width) / (xSteps - 1);
+		var yStep = Math.abs(height) / (ySteps - 1);
+		var angleCos = Math.cos(angle);
+		var angleSin = Math.sin(angle);
+		var sum = 0;
+		for (var x = 0; x < xSteps; x++) {
+			for (var y = 0; y < ySteps; y++) {
+				var coords = [x * xStep - width / 2, y * yStep - height / 2];
+				var xCoord = coords[0];
+				
+				coords[0] = coords[0] * angleCos - coords[1] * angleSin;
+				coords[1] = xCoord * angleSin + coords[1] * angleCos;
+				coords[0] = Math.round(coords[0] + xA + width / 2);
+				coords[1] = Math.round(coords[1] + yA + height / 2);
+				
+				coords[0] = this.ensureCoordInRange(coords[0], this.width);
+				coords[1] = this.ensureCoordInRange(coords[1], this.height);
+				
+				pixels.push(coords);
+				try {
+					sum += board[coords[0]][coords[1]];
+				} catch (e) {
+					console.log(coords[0], coords[1]);
+				}
+			}
+		}
+		if (debug) {
+			return pixels;
+		}
+		if (settings.debugging.drawAveragePixels) {
+			neuralCarInstance.screen.drawPixels(pixels);
+		}
+		return sum / (xSteps * ySteps);
+	};
+	
+	this.ensureCoordInRange = function (c, r) {
+		if (c < 0 || c >= r) {
+			if (c > 0) {
+				c -= Math.floor(c / r) * r;
+			} else {
+				c -= Math.ceil(c / r) * r;
+				c = r + c;
+			}
+		}
+		return c;
+	};
+	
 	this.numberToRGB = function numberToRGB (number) {
 		for (var key = 0; key < settings.board.colors.length; key++) {
 			if (settings.board.colors[key].max >= number) {
@@ -166,14 +357,31 @@ SQUARIFIC.Board = function Board (board, settings) {
 };
 
 SQUARIFIC.Screen = function Screen (backCanvas, frontCanvas) {
-	var backCanvasCtx = backCanvas.getContext("2d");
-		//frontCanvasCtx = frontCanvas.getContext("2d");
-	this.drawCars = function (carCollection) {
-		
+	var backCanvasCtx = backCanvas.getContext("2d"),
+		frontCanvasCtx = frontCanvas.getContext("2d");
+	this.drawPixels = function (pixels, color) {
+		backCanvasCtx.beginPath();
+		for (var k = 0; k < pixels.length; k++) {
+			backCanvasCtx.rect(pixels[k][0], pixels[k][1], 1, 1);
+		}
+		backCanvasCtx.fillStyle = color || "black";
+		backCanvasCtx.fill();
+	};
+	this.drawCars = function (carArray) {
+		frontCanvasCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
+		for (var k = 0; k < carArray.length; k++) {
+			frontCanvasCtx.translate(carArray[k].x + carArray[k].image.width / 2, carArray[k].y + carArray[k].image.height / 2);
+			frontCanvasCtx.rotate(carArray[k].angle);
+			frontCanvasCtx.drawImage(carArray[k].image, -carArray[k].image.width / 2, -carArray[k].image.height / 2);
+			frontCanvasCtx.rotate(-carArray[k].angle);
+			frontCanvasCtx.translate(- carArray[k].x - carArray[k].image.width / 2, - carArray[k].y - carArray[k].image.height / 2);
+		}
 	};
 	this.drawBackground = function (board) {
 		backCanvas.width = board.width;
 		backCanvas.height = board.height;
+		frontCanvas.width = board.width;
+		frontCanvas.height = board.height;
 		var backCanvasImageData = backCanvasCtx.getImageData(0, 0, backCanvas.width, backCanvas.height);
 		var width = board.width;
 		var height = board.height;
