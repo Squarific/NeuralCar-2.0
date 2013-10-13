@@ -10,7 +10,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	
 	settings.cars = settings.cars || 90;
 	settings.stepSize = settings.stepSize || 1000 / 20;
-	settings.generationTime = settings.generationTime || 12 * 1000;
+	settings.generationTime = settings.generationTime || (16 - 8/2) * 1000; //(16 - 8/2) is the new 12 for the cool programmers
 	settings.mutationRate = settings.mutationRate || 1.4;
 	settings.boardWidth = settings.boardWidth || 1200;
 	settings.boardHeight = settings.boardHeight || 600;
