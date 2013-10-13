@@ -1,7 +1,7 @@
 Example:
 ========
 
-	http://squarific.github.io/NeuralCar-2.0/
+http://squarific.github.io/NeuralCar-2.0/
 
 Todo:
 =====
