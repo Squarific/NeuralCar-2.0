@@ -2,6 +2,7 @@ var SQUARIFIC = SQUARIFIC || {};
 
 SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, board) {
 	settings = settings || {};
+	settings.ai = settings.ai || {};
 	settings.car = settings.car || {};
 	settings.brain = settings.brain || {};
 	settings.board = settings.board || {};
@@ -15,21 +16,26 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings.car.length = settings.car.length || 20;
 	settings.car.color = settings.car.color || "red";
 	settings.car.maxSpeed = settings.car.maxSpeed || 0.05;
-	settings.car.maxAcceleration = settings.maxAcceleration || 0.001;
+	settings.car.maxAcceleration = settings.maxAcceleration || 0.0001;
 	settings.car.maxTurnAngle = settings.car.maxTurnAngle || Math.PI / 1500;
 	settings.car.averageWidth = 2;
 	settings.car.averageHeight = 4;
 	
+	settings.ai.type = settings.ai.type || "blockVision";
+	settings.ai.blockLength = settings.ai.blockLength || 80;
+	settings.ai.blockLengthCount = settings.ai.blockLengthCount || 8;
+	settings.ai.blockWidth = settings.ai.blockWidth || 60;
+	settings.ai.blockWidthCount = settings.ai.blockWidthCount || 6;
+	settings.ai.front =  settings.ai.front || 3/4;
+	settings.ai.side = settings.ai.side || 1/2;
+	
 	settings.board.streetWidth = 5;
-	
-	settings.debugging.drawAveragePixels = settings.debugging.drawAveragePixels;
-	
-	settings.brain.inputStructure = 4; // How many inputs there are.
-	settings.brain.structure = settings.brain.structure || [13];
-	settings.brain.structure.push(4);
+
+	settings.brain.structure = settings.brain.structure || [15, 30];
+	settings.brain.structure.push(2);
 	
 	this.board = new SQUARIFIC.Board(board, settings, this);
-	this.carCollection = new SQUARIFIC.CarCollection([], settings);
+	this.carCollection = new SQUARIFIC.CarCollection([], settings, this);
 	this.screen = new SQUARIFIC.Screen(backCanvas, frontCanvas);
 	
 	this.screen.drawBackground(this.board);
@@ -37,19 +43,24 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	
 	this.lastUpdate = Date.now();
 	this.step = function neuralCarStep (stepSize) {
+		var changed = false;
+		this.screen.clearFrontOnNextChange();
 		var timeDifference = Date.now() - this.lastUpdate;
 		while (timeDifference - stepSize > 0) {
+			changed = true;
 			this.carCollection.step(stepSize, this.board);
 			timeDifference -= stepSize;
 			this.lastUpdate += stepSize;
 		}
-		this.screen.drawCars(this.carCollection.getCars());
+		if (changed) {
+			this.screen.drawCars(this.carCollection.getCars());
+		}
 		requestAnimationFrame(this.step);
 	}.bind(this, settings.stepSize);
 	requestAnimationFrame(this.step);
 };
 
-SQUARIFIC.Brain = function Brain (network, settings) {
+SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 	function createNetwork () {
 		var net = [];
 		for (var k = 0; k < settings.brain.structure; k++) {
@@ -96,13 +107,50 @@ SQUARIFIC.Brain = function Brain (network, settings) {
 		return network;
 	};
 	this.getInput = function getInput (car, board) {
-		var inputs = [
-			
-		];
+		return this[settings.ai.type](car, board);
+	};
+	this.blockVision = function blockVision (car, board) {
+		var nodes = [];
+		var pixels = [];
+		var	width = car.image.width,
+			height = car.image.height,
+			startX = width / 2 - settings.ai.side * settings.ai.blockWidth,
+			startY = -settings.ai.front * settings.ai.blockLength,
+			xSteps = settings.ai.blockWidthCount,
+			ySteps = settings.ai.blockLengthCount,
+			xStep = settings.ai.blockWidth / (settings.ai.blockWidthCount - 1),
+			yStep = settings.ai.blockLength / (settings.ai.blockLengthCount - 1),
+			angleCos = Math.cos(car.angle),
+			angleSin = Math.sin(car.angle);
+		for (var x = 0; x < xSteps; x++) {
+			for (var y = 0; y < ySteps; y++) {
+				var coords = [startX + x * xStep - width / 2, startY + y * yStep - height / 2];
+				var xCoord = coords[0];
+				
+				coords[0] = coords[0] * angleCos - coords[1] * angleSin;
+				coords[1] = xCoord * angleSin + coords[1] * angleCos;
+				coords[0] = Math.round(coords[0] + car.x + width / 2);
+				coords[1] = Math.round(coords[1] + car.y + height / 2);
+				
+				coords[0] = board.ensureCoordInRange(coords[0], board.width);
+				coords[1] = board.ensureCoordInRange(coords[1], board.height);
+				
+				pixels.push(coords);
+				try {
+					nodes.push(board.board[coords[0]][coords[1]]);
+				} catch (e) {
+					console.log("Vision error", coords[0], coords[1]);
+				}
+			}
+		}
+		if (settings.debugging.drawVisionPixels) {
+			neuralCarInstance.screen.drawPixels(pixels, "#65BEC9", true);
+		}
 		return {
-			acceleration:0,
-			turning: 1
+			turning: 0.1,
+			acceleration: 0
 		};
+		return nodes;
 	};
 };
 
@@ -212,7 +260,7 @@ SQUARIFIC.Car = function Car (brain, settings) {
 	this.draw();
 };
 
-SQUARIFIC.CarCollection = function CarCollection (carArray, settings) {
+SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarInstance) {
 	carArray = carArray || [];
 	settings.cars = settings.cars || 10;
 	this.add = function addCar (car, training) {
@@ -239,7 +287,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings) {
 		return carArray;
 	};
 	for (var k = 0; k < settings.cars; k++) {
-		this.add(new SQUARIFIC.Car(new SQUARIFIC.Brain(undefined, settings), settings), true);
+		this.add(new SQUARIFIC.Car(new SQUARIFIC.Brain(undefined, settings, neuralCarInstance), settings), true);
 	}
 };
 
@@ -359,16 +407,31 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 SQUARIFIC.Screen = function Screen (backCanvas, frontCanvas) {
 	var backCanvasCtx = backCanvas.getContext("2d"),
 		frontCanvasCtx = frontCanvas.getContext("2d");
-	this.drawPixels = function (pixels, color) {
-		backCanvasCtx.beginPath();
-		for (var k = 0; k < pixels.length; k++) {
-			backCanvasCtx.rect(pixels[k][0], pixels[k][1], 1, 1);
+	var clearFrontOnNextChange = false;
+	this.clearFrontOnNextChange = function () {
+		clearFrontOnNextChange = true;
+	};
+	this.drawPixels = function (pixels, color, foreground) {
+		var ctx = frontCanvasCtx;
+		if (clearFrontOnNextChange && foreground) {
+			frontCanvasCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
+			clearFrontOnNextChange = false;
 		}
-		backCanvasCtx.fillStyle = color || "black";
-		backCanvasCtx.fill();
+		if (!foreground) {
+			ctx = backCanvasCtx;
+		}
+		ctx.beginPath();
+		for (var k = 0; k < pixels.length; k++) {
+			ctx.rect(pixels[k][0], pixels[k][1], 1, 1);
+		}
+		ctx.fillStyle = color || "black";
+		ctx.fill();
 	};
 	this.drawCars = function (carArray) {
-		frontCanvasCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
+		if (clearFrontOnNextChange && foreground) {
+			frontCanvasCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
+			clearFrontOnNextChange = false;
+		}
 		for (var k = 0; k < carArray.length; k++) {
 			frontCanvasCtx.translate(carArray[k].x + carArray[k].image.width / 2, carArray[k].y + carArray[k].image.height / 2);
 			frontCanvasCtx.rotate(carArray[k].angle);
