@@ -2,9 +2,62 @@
 	<head>
 		<title>Neural Car 2.0</title>
 		
+		<link href="style.css" rel="stylesheet" />
+		
 		<script src="NeuralCar.js"></script>
+		<script src="settings.js"></script>
+		<script>
+			var neuralCarSettingsObject = {
+				cars: {type: "number", min: 0 help: "Amount of cars."},
+				runSpeed: {type: "float", help: "How fast the simulation runs (higher than 10 is not advisable unless you have a very strong overclocked cpu)"},
+				stepSize: {type: "number", min: 1, help: "Ms per physics frame"},
+				generationTime: {type: "number", min: 1, help: "Ms per generation"},
+				mutationRate: {type: "float", help: "Rate at which the brains mutate and differentiate from the top cars (can be negative)"},
+				boardWidth: {type: "number", min: 50, help: "Width of the board"},
+				boardHeight: {type: "number", min: 50, help: "Height of the board"},
+				retireAfterGenerations: {type: "number", min: 0, help: "Amount of generations a car has to be in the top before turning purple and being considered 'mature'"},
+				minimumMutation: {type: "float", help: "Minimum value a bias/weight should have when mutating. If the bias/weight value is smaller than this value, it will pretend the node had this value."},
+				keepTop: {type: "float", help: "Value between 0 and 1, 1 = all cars become top, 0 = none, 0.1 = 10%, 0.2 = 20%, etc."},
+				ai: {
+					category: true,
+					type: {type: "string", help: "Currently only the 'blockVision' ai has been implemented.", value: "blockVision", enabled: "false"},
+					blockLength: {type: "number", min: 1, help: "Amount of pixels that cars will see in their front/backward direction"},
+					blockWidth: {type: "number", min: 1, help: "Amount of pixels that a car will see at their sides"},
+					blockLengthCount: {type: "number", min: 1, help: "Amount of dots in the front/backward direction that the car will use to determine if a pixel is grass or road."},
+					blockWidthCount: {type: "number", min: 1, help: "Amount of dots in the sideward direction that the car will use to see which pixels are grass and which are road."},
+					front: {type:"float", help: "Value between 0 and 1 of how many of the blockVision is in the front, 0.5 = half of the block of pixels is in the front."},
+					side: {type: "float", help: "Value between 0 and 1 of how many pixels are on the left of the car"}
+				},
+				car: {
+					category: true,
+					width: {type: "number", min: 1, help: "Width of the car in pixels"},
+					length: {type: "number", min: 1, help: "Length of the car in pixels"},
+					color: {type: "string", help: "Css color of the car"},
+					maxSpeed: {type: "float", help: "Max speed a car can go in pixels per ms"},
+					maxAcceleration: {type: "float", help: "Max acceleration in pixels per ms per ms"},
+					maxTurnAngle: {type: "float", help: "Turnability of the car in radians per ms"},
+					averageWidth: {type: "number", min: 1, help: "Amount of dots, width wise, used to determine how much of the car is on grass/road"},
+					averageHeight: {type: "number", min: 1, help: "Amount of dots, height wise, used to determine how much of the car is on grass/road"}
+				},
+				board: {
+					category: true,
+					streetWidth: {type: "float", min: 1, help: "Width of the street relative to the car width."}
+				},
+				brain: {
+					category: true,
+					structure: {type: "numberArray", help: "Hidden layers of the network"}
+				},
+				debugging: {
+					category: true,
+					drawAveragePixels: {type: "switch", help: "Draw the pixels used for the detection of the max speed (leaves a trail where cars have driven)"},
+					drawVisionPixels: {type: "switch", help: "Draw the pixels that a car uses for vision (blockVision)"}
+				}
+			};
+		</script>
 	</head>
-	<body onload="SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), {})">
+	<body onload="SQUARIFIC.settings.init(document.getElementById('settings'), neuralCarSettingsObject, function (settings) {SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), settings)});">
+		<div id="settings">
+		</div>
 		<canvas style="position:absolute; left:0; top:0;" id="backCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
 		<canvas style="position:absolute; left:0; top:0;" id="frontCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
 	</body>

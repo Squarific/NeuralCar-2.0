@@ -69,7 +69,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	
 	settings.car.width = settings.car.width || 10;
 	settings.car.length = settings.car.length || 20;
-	settings.car.color = settings.car.color || "red";
+	settings.car.color = settings.car.color || settings.car.colour || "red";
 	settings.car.maxSpeed = settings.car.maxSpeed || 0.075;
 	settings.car.maxAcceleration = settings.maxAcceleration || 0.00004;
 	settings.car.maxTurnAngle = settings.car.maxTurnAngle || Math.PI / 1800;
@@ -86,11 +86,11 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	
 	settings.board.streetWidth = 4.5;
 
-	settings.brain.inputStructure = settings.brain.inputStructure || 24;
+	settings.brain.inputStructure = settings.brain.inputStructure || settings.ai.blockLengthCount * settings.ai.blockWidthCount || 24;
 	settings.brain.structure = settings.brain.structure || [26];
 	settings.brain.structure.push(2);
 	
-	this.runSpeed = 1;
+	this.runSpeed = settings.runSpeed || 1;
 	
 	this.console = new SQUARIFIC.Console();
 	this.board = new SQUARIFIC.Board(board, settings, this);
