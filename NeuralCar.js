@@ -437,7 +437,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 			} else {
 				var net = topList[Math.floor(Math.random() * topList.length)].brain.getNetwork();
 				carArray[k].brain.setNetwork(carArray[k].brain.mutate(net, settings.mutationRate));
-				carArray[k].changeColor("red");
+				carArray[k].changeColor(settings.car.color);
 				carArray[k].lastScore = carArray[k].score;
 				carArray[k].score = 0;
 				carArray[k].bestLength = 0;

@@ -1,0 +1,68 @@
+body {
+	background:#3F82A6;
+	color:white;
+	font-weight:800;
+	font-size:18px;
+}
+#settings {
+	position:absolute;
+	left:0;
+	top:0;
+	text-align:center;
+}
+.setting {
+	margin:12px;
+	background:#1D5A73;
+	padding:12px;
+	text-align:left;
+	position:relative;
+	overflow:hidden;
+}
+.setting-input {
+	float:right;
+}
+.setting-name {
+	display:inline-block;
+	min-width:290px;
+	text-align:left;
+	margin-left:50px;
+}
+.setting-help {
+	position:absolute;
+	left:0;
+	top:0;
+	width:40px;
+	height:40%;
+	overflow:hidden;
+	padding:5px;
+	background:#254A59;
+	vertical-align:center;
+	transition-duration: .4s;
+	-webkit-transition-duration: .4s;
+}
+.setting-help:before {
+	content: "Help - ";
+}
+.setting-help:before:hover {
+	content: none;
+}
+.setting-help:hover {
+	width:99%;
+	height:100%;
+}
+.category {
+	margin:30px;
+	background:#407185;
+	padding:10px;
+	display:inline-block;
+	vertical-align:text-top;
+}
+.settings-gobutton {
+	margin:30px;
+	padding:10px;
+	background:#1D5A73;
+	cursor:pointer;
+}
+.settings-gobutton:hover {
+	background:#407185;
+}
