@@ -17,7 +17,7 @@
 			};
 			function startup () {
 				document.getElementById("settings").appendChild(SQUARIFIC.settings.init(neuralCarSettingsObject, 'Create Map', function (settings) {
-					var SQUARIFIC.map = new SQUARIFIC.NeuralCarMapEditor(document.getElementById('backCanvas'), settings);
+					SQUARIFIC.map = new SQUARIFIC.NeuralCarMapEditor(document.getElementById('backCanvas'), settings);
 					var settings = document.getElementById("settings");
 					settings.parentNode.removeChild(settings);
 				}));
