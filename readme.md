@@ -10,4 +10,3 @@ Todo:
 	*) Collision
 	*) Better maps
 	*) Progress bar
-	*) Optimize for speed
