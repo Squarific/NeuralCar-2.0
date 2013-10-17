@@ -5,6 +5,8 @@ body {
 	position:absolute;
 	left:0;
 	top:0;
+	min-width:100%;
+	min-height:100%;
 	text-align:center;
 	background:#3F82A6;
 	color:white;

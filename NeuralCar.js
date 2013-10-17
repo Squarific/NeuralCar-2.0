@@ -482,9 +482,6 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 		settings.car = settings.car || {};
 		streetWidth = settings.car.width * settings.board.streetWidth || 60;
 		
-		settings.board = settings.board || {};
-		settings.board.colors = settings.board.colors || [{max: 0.5, r: 51, g: 133, b: 33}, {max: 1, r: 145, g: 140, b: 122}];
-		
 		for (var x = 0; x < board.width; x++) {
 			for (var y = 0; y < board.height; y++) {
 				board[x] = board[x] || {};
@@ -498,6 +495,9 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 		
 		return board;
 	}
+	
+	settings.board = settings.board || {};
+	settings.board.colors = settings.board.colors || [{max: 0.5, r: 51, g: 133, b: 33}, {max: 1, r: 145, g: 140, b: 122}];
 	
 	if (typeof board !== "object") {
 		board = createBoard(settings);
