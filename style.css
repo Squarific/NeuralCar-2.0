@@ -1,4 +1,5 @@
 body {
+	font-family: 'Orbitron', sans-serif;
 }
 #settings {
 	position:absolute;
@@ -7,8 +8,8 @@ body {
 	text-align:center;
 	background:#3F82A6;
 	color:white;
-	font-weight:800;
-	font-size:18px;
+	font-weight:700;
+	font-size:16px;
 }
 .setting {
 	margin:12px;
@@ -34,7 +35,8 @@ body {
 	left:0;
 	top:0;
 	width:40px;
-	height:20px;
+	height:16px;
+	font-size:14px;
 	overflow:hidden;
 	padding:5px;
 	background:#254A59;
@@ -140,6 +142,7 @@ body {
 	cursor:pointer;
 	transition-duration: .2s;
 	-webkit-transition-duration: .2s;
+	border-bottom:3px solid #254A59;
 }
 .settings-gobutton:hover {
 	background:#407185;
