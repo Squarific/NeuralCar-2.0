@@ -66,6 +66,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 		settings.boardHeight = parseInt(s.boardHeight) || 600;
 		settings.retireAfterGenerations = parseInt(s.retireAfterGenerations) || 14;
 		settings.keepTop = parseFloat(s.keepTop) || 0.1;
+		settings.minimumMutation = parseFloat(settings.minimumMutation) || 0.01;
 		
 		settings.car.width = parseInt(s.car.width) || 10;
 		settings.car.length = parseInt(s.car.length) || 20;
@@ -86,7 +87,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	
 		settings.board.streetWidth = parseFloat(s.board.streetWidth) || 4.5;
 
-		settings.brain.inputStructure = s.brain.inputStructure || settings.ai.blockLengthCount * settings.ai.blockWidthCount || 24;
+		settings.brain.inputStructure = s.brain.inputStructure || settings.ai.blockLengthCount * settings.ai.blockWidthCount || 48;
 		settings.brain.structure = s.brain.structure || [26];
 		settings.brain.structure.push(2);
 		this.runSpeed = parseInt(s.runSpeed) || 1;
@@ -139,7 +140,7 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 					bias: sign * Math.random(),
 					weights: []
 				};
-				if (parseInt(settings.brain.structure[k - 1]) !== 0) {
+				if (!isNaN(parseInt(settings.brain.structure[k - 1]))) {
 					var weights = parseInt(settings.brain.structure[k - 1]);
 				} else {
 					weights = settings.brain.inputStructure;
@@ -150,6 +151,7 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 				}
 			}
 		}
+		console.log(net)
 		return net;
 	}
 	if (typeof network !== "object") {
@@ -179,13 +181,10 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 		for (var k = 0; k < network.length; k++) {
 			for (var i = 0; i < network[k].length; i++) {
 				var sign = Math.random() < 0.5 ? -1 : 1;
-				if (network[k][i].bias === 0) {
-					network[k][i].bias = Math.random();
-				}
-				network[k][i].bias += sign * Math.random() * rate;
+				network[k][i].bias += Math.max(network[k][i].bias, settings.minimumMutation) * sign * Math.random() * rate;
 				for (var l = 0; l < network[k][i].weights.length; l++) {
 					sign = Math.random() < 0.5 ? -1 : 1;
-					network[k][i].weights[l] += sign * Math.random() * rate;
+					network[k][i].weights[l] += Math.max(network[k][i].weights[l], settings.minimumMutation) * sign * Math.random() * rate;
 				}
 			}
 		}
@@ -493,7 +492,7 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 				if ((Math.floor(x / streetWidth) % 7) === 2 || (Math.floor(y / streetWidth) % 4) === 2) {
 					board[x][y] = 1;
 				} else {
-					board[x][y] = 0.24; //grass
+					board[x][y] = 0.25; //grass
 				}
 			}
 		}
