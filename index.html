@@ -8,15 +8,14 @@
 		<script src="settings.js"></script>
 		<script>
 			var neuralCarSettingsObject = {
-				cars: {type: "number", value: 100, min: 0, help: "Amount of cars."},
+				cars: {type: "number", value: 150, min: 0, help: "Amount of cars."},
 				runSpeed: {type: "float", value: 1, help: "How fast the simulation runs (higher than 10 is not advisable unless you have a very strong overclocked cpu)"},
 				stepSize: {type: "number", value: 1000 / 20, min: 1, help: "Ms per physics frame"},
-				generationTime: {type: "number", value: 12000, min: 1, help: "Ms per generation"},
-				mutationRate: {type: "float", value: 1.4, help: "Rate at which the brains mutate and differentiate from the top cars (can be negative)"},
+				generationTime: {type: "number", value: 15000, min: 1, help: "Ms per generation"},
+				mutationRate: {type: "float", value: 1.2, help: "Rate at which the brains mutate and differentiate from the top cars (can be negative)"},
 				boardWidth: {type: "number", value: 1200, min: 50, help: "Width of the board"},
-				boardHeight: {type: "number", value: 600, min: 50, help: "Height of the board"},
-				retireAfterGenerations: {type: "number", value: 10, min: 0, help: "Amount of generations a car has to be in the top before turning purple and being considered 'mature'"},
-				minimumMutation: {type: "float", value: 0.01, help: "Value assigned to bias and node before mutating when lower than this value."},
+				boardHeight: {type: "number", value: 650, min: 50, help: "Height of the board"},
+				retireAfterGenerations: {type: "number", value: 15, min: 0, help: "Amount of generations a car has to be in the top before turning purple and being considered 'mature'"},
 				keepTop: {type: "float", value: 0.1, help: "Value between 0 and 1, 1 = all cars become top, 0 = none, 0.1 = 10%, 0.2 = 20%, etc."},
 				ai: {
 					category: true,
@@ -33,15 +32,15 @@
 					width: {type: "number", value: 10, min: 1, help: "Width of the car in pixels"},
 					length: {type: "number", value: 20, min: 1, help: "Length of the car in pixels"},
 					color: {type: "color", value: "#FF0000", help: "Css color of the car"},
-					maxSpeed: {type: "float", value: 0.075, help: "Max speed a car can go in pixels per ms"},
-					maxAcceleration: {type: "float", value: 0.00004, help: "Max acceleration in pixels per ms per ms"},
-					maxTurnAngle: {type: "float", value: Math.PI / 1800, help: "Turnability of the car in radians per ms"},
+					maxSpeed: {type: "float", value: 0.078, help: "Max speed a car can go in pixels per ms"},
+					maxAcceleration: {type: "float", value: 0.00005, help: "Max acceleration in pixels per ms per ms"},
+					maxTurnAngle: {type: "float", value: Math.PI / 2000, help: "Turnability of the car in radians per ms"},
 					averageWidth: {type: "number", value: 2, min: 1, help: "Amount of dots, width wise, used to determine how much of the car is on grass/road"},
 					averageHeight: {type: "number", value: 4, min: 1, help: "Amount of dots, height wise, used to determine how much of the car is on grass/road"}
 				},
 				board: {
 					category: true,
-					streetWidth: {type: "float", value: 4.5, min: 1, help: "Width of the street relative to the car width."}
+					streetWidth: {type: "float", value: 4.8, min: 1, help: "Width of the street relative to the car width."}
 				},
 				brain: {
 					category: true,

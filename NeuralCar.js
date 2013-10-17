@@ -50,47 +50,48 @@ if (!Function.prototype.bind) {
 var SQUARIFIC = SQUARIFIC || {};
 
 SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, board) {
-	settings = settings || {};
-	settings.ai = settings.ai || {};
-	settings.car = settings.car || {};
-	settings.brain = settings.brain || {};
-	settings.board = settings.board || {};
-	settings.debugging = settings.debugging || {};
+	this.setSettings = function defaultSettings (s) {
+		settings = s || {};
+		settings.ai = s.ai || {};
+		settings.car = s.car || {};
+		settings.brain = s.brain || {};
+		settings.board = s.board || {};
+		settings.debugging = s.debugging || {};
+		
+		settings.cars = parseInt(s.cars) || 100;
+		settings.stepSize = parseInt(s.stepSize) || 1000 / 20;
+		settings.generationTime = parseInt(s.generationTime) || (16 - 8/2) * 1000; //(16 - 8/2) is the new 12 for the cool programmers
+		settings.mutationRate = parseFloat(s.mutationRate) || 1.4;
+		settings.boardWidth = parseInt(s.boardWidth) || 1200;
+		settings.boardHeight = parseInt(s.boardHeight) || 600;
+		settings.retireAfterGenerations = parseInt(s.retireAfterGenerations) || 14;
+		settings.keepTop = parseFloat(s.keepTop) || 0.1;
+		
+		settings.car.width = parseInt(s.car.width) || 10;
+		settings.car.length = parseInt(s.car.length) || 20;
+		settings.car.color = s.car.color || settings.car.colour || "red";
+		settings.car.maxSpeed = parseFloat(s.car.maxSpeed) || 0.075;
+		settings.car.maxAcceleration = parseFloat(s.maxAcceleration) || 0.00004;
+		settings.car.maxTurnAngle = parseFloat(s.car.maxTurnAngle) || Math.PI / 1800;
+		settings.car.averageWidth = parseInt(s.car.averageWidth) || 2;
+		settings.car.averageHeight = parseInt(s.car.averageHeight) || 4;
+		
+		settings.ai.type = s.ai.type || "blockVision";
+		settings.ai.blockLength = parseInt(s.ai.blockLength) || 80;
+		settings.ai.blockLengthCount = parseInt(s.ai.blockLengthCount) || 8;
+		settings.ai.blockWidth = parseInt(s.ai.blockWidth) || 60;
+		settings.ai.blockWidthCount = parseInt(s.ai.blockWidthCount) || 6;
+		settings.ai.front =  parseFloat(s.ai.front) || 3/4;
+		settings.ai.side = parseFloat(s.ai.side) || 1/2;
 	
-	settings.cars = parseInt(settings.cars) || 100;
-	settings.stepSize = parseInt(settings.stepSize) || 1000 / 20;
-	settings.generationTime = parseInt(settings.generationTime) || (16 - 8/2) * 1000; //(16 - 8/2) is the new 12 for the cool programmers
-	settings.mutationRate = parseFloat(settings.mutationRate) || 1.4;
-	settings.boardWidth = parseInt(settings.boardWidth) || 1200;
-	settings.boardHeight = parseInt(settings.boardHeight) || 600;
-	settings.retireAfterGenerations = parseInt(settings.retireAfterGenerations) || 14;
-	settings.minimumMutation = parseFloat(settings.minimumMutation) || 0.01;
-	settings.keepTop = parseFloat(settings.keepTop) || 0.1;
-	
-	settings.car.width = parseInt(settings.car.width) || 10;
-	settings.car.length = parseInt(settings.car.length) || 20;
-	settings.car.color = settings.car.color || settings.car.colour || "red";
-	settings.car.maxSpeed = parseFloat(settings.car.maxSpeed) || 0.075;
-	settings.car.maxAcceleration = parseFloat(settings.maxAcceleration) || 0.00004;
-	settings.car.maxTurnAngle = parseFloat(settings.car.maxTurnAngle) || Math.PI / 1800;
-	settings.car.averageWidth = parseInt(settings.car.averageWidth) || 2;
-	settings.car.averageHeight = parseInt(settings.car.averageHeight) || 4;
-	
-	settings.ai.type = settings.ai.type || "blockVision";
-	settings.ai.blockLength = parseInt(settings.ai.blockLength) || 80;
-	settings.ai.blockLengthCount = parseInt(settings.ai.blockLengthCount) || 8;
-	settings.ai.blockWidth = parseInt(settings.ai.blockWidth) || 60;
-	settings.ai.blockWidthCount = parseInt(settings.ai.blockWidthCount) || 6;
-	settings.ai.front =  parseFloat(settings.ai.front) || 3/4;
-	settings.ai.side = parseFloat(settings.ai.side) || 1/2;
-	
-	settings.board.streetWidth = parseFloat(settings.board.streetWidth) || 4.5;
+		settings.board.streetWidth = parseFloat(s.board.streetWidth) || 4.5;
 
-	settings.brain.inputStructure = settings.brain.inputStructure || settings.ai.blockLengthCount * settings.ai.blockWidthCount || 24;
-	settings.brain.structure = settings.brain.structure || [26];
-	settings.brain.structure.push(2);
-	
-	this.runSpeed = parseInt(settings.runSpeed) || 1;
+		settings.brain.inputStructure = s.brain.inputStructure || settings.ai.blockLengthCount * settings.ai.blockWidthCount || 24;
+		settings.brain.structure = s.brain.structure || [26];
+		settings.brain.structure.push(2);
+		this.runSpeed = parseInt(s.runSpeed) || 1;
+	}
+	this.setSettings(settings);
 	
 	this.console = new SQUARIFIC.Console();
 	this.board = new SQUARIFIC.Board(board, settings, this);
@@ -181,10 +182,10 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 				if (network[k][i].bias === 0) {
 					network[k][i].bias = Math.random();
 				}
-				network[k][i].bias += Math.max(network[k][i].bias, settings.minimumMutation) * sign * Math.random() * rate;
+				network[k][i].bias += sign * Math.random() * rate;
 				for (var l = 0; l < network[k][i].weights.length; l++) {
 					sign = Math.random() < 0.5 ? -1 : 1;
-					network[k][i].weights[l] += Math.max(network[k][i].weights[l], settings.minimumMutation) * sign * Math.random() * rate;
+					network[k][i].weights[l] += sign * Math.random() * rate;
 				}
 			}
 		}
@@ -492,7 +493,7 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 				if ((Math.floor(x / streetWidth) % 7) === 2 || (Math.floor(y / streetWidth) % 4) === 2) {
 					board[x][y] = 1;
 				} else {
-					board[x][y] = 0.25; //grass
+					board[x][y] = 0.24; //grass
 				}
 			}
 		}
