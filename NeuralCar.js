@@ -442,7 +442,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 				carArray[k].bestLength = 0;
 			}
 		}
-		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + Math.round(topList[0].lastScore * 100) / 100 + ", runtime: " + Math.round((Date.now() - this.startTime) / 10) / 100 + " seconds");
+		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + Math.round(topList[0].lastScore * 100) / 100 + ", runtime: " + Math.round((Date.now() - this.startTime) / 1000) + " seconds");
 	};
 	this.bestCar = function bestCar () {
 		var best;
