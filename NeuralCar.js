@@ -49,7 +49,7 @@ if (!Function.prototype.bind) {
 
 var SQUARIFIC = SQUARIFIC || {};
 
-SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, board) {
+SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, settings, board) {
 	this.setSettings = function defaultSettings (s) {
 		settings = s || {};
 		settings.ai = s.ai || {};
@@ -94,7 +94,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	}
 	this.setSettings(settings);
 	
-	this.console = new SQUARIFIC.Console();
+	this.console = new SQUARIFIC.Console(console);
 	this.board = new SQUARIFIC.Board(board, settings, this);
 	this.carCollection = new SQUARIFIC.CarCollection([], settings, this);
 	this.screen = new SQUARIFIC.Screen(backCanvas, frontCanvas);
@@ -151,7 +151,6 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 				}
 			}
 		}
-		console.log(net)
 		return net;
 	}
 	if (typeof network !== "object") {
@@ -443,7 +442,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 				carArray[k].bestLength = 0;
 			}
 		}
-		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + topList[0].lastScore + ", runtime: " + Math.round((Date.now() - this.startTime) / 10) / 100 + " seconds");
+		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + Math.round(topList[0].lastScore * 100) / 100 + ", runtime: " + Math.round((Date.now() - this.startTime) / 10) / 100 + " seconds");
 	};
 	this.bestCar = function bestCar () {
 		var best;
@@ -647,5 +646,10 @@ SQUARIFIC.Screen = function Screen (backCanvas, frontCanvas) {
 SQUARIFIC.Console = function Console (element) {
 	this.log = function log (m) {
 		console.log(m);
+		var div = document.createElement("div");
+		div.className = "console-message";
+		div.appendChild(document.createTextNode(m));
+		element.appendChild(div);
+		element.scrollTop = 2147483647;
 	};
 };

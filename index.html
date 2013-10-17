@@ -56,7 +56,7 @@
 			};
 			function startup () {
 				document.getElementById("settings").appendChild(SQUARIFIC.settings.init(neuralCarSettingsObject, 'Start Simulation', function (settings) {
-					SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), settings);
+					SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), document.getElementById("console"), settings);
 					var settings = document.getElementById("settings");
 					settings.parentNode.removeChild(settings);
 				}));
@@ -66,6 +66,15 @@
 	<body onload="startup()">
 		<canvas style="position:absolute; left:0; top:0;" id="backCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
 		<canvas style="position:absolute; left:0; top:0;" id="frontCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
+		<div id="console">
+			Welcome to neural car 2.0.<br/><br/>
+			For the source code, visit: <a href="https://github.com/Squarific/NeuralCar-2.0">https://github.com/Squarific/NeuralCar-2.0</a><br/><br/>
+			Info: <br/>
+			The cars each have their own neural network. The top cars (blue) are copied randomly by the red cars and slightly mutated. When a car is in the top long enough it will retire and turn purple after which it will no longer change.
+			<br/><br/>
+			Logs:
+			<br/><br/>
+		</div>
 		<div id="settings">
 		</div>
 	</body>

@@ -11,6 +11,30 @@ body {
 	font-weight:700;
 	font-size:16px;
 }
+#console {
+	position:fixed;
+	right:20px;
+	top:20px;
+	width:30%;
+	min-width:200px;
+	background:rgba(38, 22, 121, 0.5);
+	border:1px solid white;
+	max-height:80%;
+	color:white;
+	font-size:14px;
+	padding:5px;
+	overflow:auto;
+}
+.console-message {
+	display:inline-block;
+	margin-top:5px;
+}
+a {
+	color:white;
+}
+a:hover {
+	color:gray;
+}
 .setting {
 	margin:12px;
 	background:#1D5A73;
