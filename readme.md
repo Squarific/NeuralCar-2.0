@@ -8,5 +8,5 @@ Todo:
 
 	*) Pacman like dots that give points
 	*) Collision
-	*) Better maps
+	*) Better maps (image)
 	*) Progress bar

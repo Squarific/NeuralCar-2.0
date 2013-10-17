@@ -60,12 +60,7 @@
 			};
 			function startup () {
 				document.getElementById("settings").appendChild(SQUARIFIC.settings.init(neuralCarSettingsObject, 'Start Simulation', function (settings) {
-					var board;
-					if (settings.roadBoard.roadBoardJson) {
-						board = JSON.parse(settings.roadBoard.roadBoardJson);
-						board = SQUARIFIC.neuralCarRoadBoardToPixelBoard(board).board;
-					}
-					SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), document.getElementById("console"), settings, board);
+					SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), document.getElementById("console"), settings);
 					var settings = document.getElementById("settings");
 					settings.parentNode.removeChild(settings);
 				}));
