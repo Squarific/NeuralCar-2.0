@@ -11,7 +11,7 @@
 				cars: {type: "number", value: 100, min: 0, help: "Amount of cars."},
 				runSpeed: {type: "float", value: 1, help: "How fast the simulation runs (higher than 10 is not advisable unless you have a very strong overclocked cpu)"},
 				stepSize: {type: "number", value: 1000 / 20, min: 1, help: "Ms per physics frame"},
-				generationTime: {type: "number", value: 12, min: 1, help: "Ms per generation"},
+				generationTime: {type: "number", value: 12000, min: 1, help: "Ms per generation"},
 				mutationRate: {type: "float", value: 1.4, help: "Rate at which the brains mutate and differentiate from the top cars (can be negative)"},
 				boardWidth: {type: "number", value: 1200, min: 50, help: "Width of the board"},
 				boardHeight: {type: "number", value: 600, min: 50, help: "Height of the board"},
@@ -45,7 +45,7 @@
 				},
 				brain: {
 					category: true,
-					structure: {type: "numberArray", value: [26], help: "Hidden layers of the network"}
+					structure: {type: "array", arrayType: "number", value: [26], help: "Hidden layers of the network"}
 				},
 				debugging: {
 					category: true,
@@ -53,9 +53,16 @@
 					drawVisionPixels: {type: "switch", value: false, help: "Draw the pixels that a car uses for vision (blockVision)"}
 				}
 			};
+			function startup () {
+				document.getElementById("settings").appendChild(SQUARIFIC.settings.init(neuralCarSettingsObject, 'Start Simulation', function (settings) {
+					SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), settings);
+					var settings = document.getElementById("settings");
+					settings.parentNode.removeChild(settings);
+				}));
+			}
 		</script>
 	</head>
-	<body onload="document.getElementById('settings').appendChild(SQUARIFIC.settings.init(neuralCarSettingsObject, 'Start Simulation', function (settings) {SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), settings)}));">
+	<body onload="startup()">
 		<canvas style="position:absolute; left:0; top:0;" id="backCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
 		<canvas style="position:absolute; left:0; top:0;" id="frontCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
 		<div id="settings">

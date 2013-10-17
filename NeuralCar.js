@@ -57,40 +57,40 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, settings, boa
 	settings.board = settings.board || {};
 	settings.debugging = settings.debugging || {};
 	
-	settings.cars = settings.cars || 100;
-	settings.stepSize = settings.stepSize || 1000 / 20;
-	settings.generationTime = settings.generationTime || (16 - 8/2) * 1000; //(16 - 8/2) is the new 12 for the cool programmers
-	settings.mutationRate = settings.mutationRate || 1.4;
-	settings.boardWidth = settings.boardWidth || 1200;
-	settings.boardHeight = settings.boardHeight || 600;
-	settings.retireAfterGenerations = settings.retireAfterGenerations || 14;
-	settings.minimumMutation = settings.minimumMutation || 0.01;
-	settings.keepTop = settings.keepTop || 0.1;
+	settings.cars = parseInt(settings.cars) || 100;
+	settings.stepSize = parseInt(settings.stepSize) || 1000 / 20;
+	settings.generationTime = parseInt(settings.generationTime) || (16 - 8/2) * 1000; //(16 - 8/2) is the new 12 for the cool programmers
+	settings.mutationRate = parseFloat(settings.mutationRate) || 1.4;
+	settings.boardWidth = parseInt(settings.boardWidth) || 1200;
+	settings.boardHeight = parseInt(settings.boardHeight) || 600;
+	settings.retireAfterGenerations = parseInt(settings.retireAfterGenerations) || 14;
+	settings.minimumMutation = parseFloat(settings.minimumMutation) || 0.01;
+	settings.keepTop = parseFloat(settings.keepTop) || 0.1;
 	
-	settings.car.width = settings.car.width || 10;
-	settings.car.length = settings.car.length || 20;
+	settings.car.width = parseInt(settings.car.width) || 10;
+	settings.car.length = parseInt(settings.car.length) || 20;
 	settings.car.color = settings.car.color || settings.car.colour || "red";
-	settings.car.maxSpeed = settings.car.maxSpeed || 0.075;
-	settings.car.maxAcceleration = settings.maxAcceleration || 0.00004;
-	settings.car.maxTurnAngle = settings.car.maxTurnAngle || Math.PI / 1800;
-	settings.car.averageWidth = settings.car.averageWidth || 2;
-	settings.car.averageHeight = settings.car.averageHeight || 4;
+	settings.car.maxSpeed = parseFloat(settings.car.maxSpeed) || 0.075;
+	settings.car.maxAcceleration = parseFloat(settings.maxAcceleration) || 0.00004;
+	settings.car.maxTurnAngle = parseFloat(settings.car.maxTurnAngle) || Math.PI / 1800;
+	settings.car.averageWidth = parseInt(settings.car.averageWidth) || 2;
+	settings.car.averageHeight = parseInt(settings.car.averageHeight) || 4;
 	
 	settings.ai.type = settings.ai.type || "blockVision";
-	settings.ai.blockLength = settings.ai.blockLength || 80;
-	settings.ai.blockLengthCount = settings.ai.blockLengthCount || 8;
-	settings.ai.blockWidth = settings.ai.blockWidth || 60;
-	settings.ai.blockWidthCount = settings.ai.blockWidthCount || 6;
-	settings.ai.front =  settings.ai.front || 3/4;
-	settings.ai.side = settings.ai.side || 1/2;
+	settings.ai.blockLength = parseInt(settings.ai.blockLength) || 80;
+	settings.ai.blockLengthCount = parseInt(settings.ai.blockLengthCount) || 8;
+	settings.ai.blockWidth = parseInt(settings.ai.blockWidth) || 60;
+	settings.ai.blockWidthCount = parseInt(settings.ai.blockWidthCount) || 6;
+	settings.ai.front =  parseFloat(settings.ai.front) || 3/4;
+	settings.ai.side = parseFloat(settings.ai.side) || 1/2;
 	
-	settings.board.streetWidth = 4.5;
+	settings.board.streetWidth = parseFloat(settings.board.streetWidth) || 4.5;
 
 	settings.brain.inputStructure = settings.brain.inputStructure || settings.ai.blockLengthCount * settings.ai.blockWidthCount || 24;
 	settings.brain.structure = settings.brain.structure || [26];
 	settings.brain.structure.push(2);
 	
-	this.runSpeed = settings.runSpeed || 1;
+	this.runSpeed = parseInt(settings.runSpeed) || 1;
 	
 	this.console = new SQUARIFIC.Console();
 	this.board = new SQUARIFIC.Board(board, settings, this);
@@ -132,14 +132,14 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 		var net = [];
 		for (var k = 0; k < settings.brain.structure.length; k++) {
 			net[k] = [];
-			for (var i = 0; i < settings.brain.structure[k]; i++) {
+			for (var i = 0; i < parseInt(settings.brain.structure[k]); i++) {
 				var sign = Math.random() < 0.5 ? -1 : 1;
 				net[k][i] = {
 					bias: sign * Math.random(),
 					weights: []
 				};
-				if (typeof settings.brain.structure[k - 1] === "number") {
-					var weights = settings.brain.structure[k - 1];
+				if (parseInt(settings.brain.structure[k - 1]) !== 0) {
+					var weights = parseInt(settings.brain.structure[k - 1]);
 				} else {
 					weights = settings.brain.inputStructure;
 				}

@@ -1,14 +1,14 @@
 body {
-	background:#3F82A6;
-	color:white;
-	font-weight:800;
-	font-size:18px;
 }
 #settings {
 	position:absolute;
 	left:0;
 	top:0;
 	text-align:center;
+	background:#3F82A6;
+	color:white;
+	font-weight:800;
+	font-size:18px;
 }
 .setting {
 	margin:12px;
@@ -20,6 +20,8 @@ body {
 }
 .setting-input {
 	float:right;
+	min-width:100px;
+	padding:2px;
 }
 .setting-name {
 	display:inline-block;
@@ -32,7 +34,7 @@ body {
 	left:0;
 	top:0;
 	width:40px;
-	height:40%;
+	height:20px;
 	overflow:hidden;
 	padding:5px;
 	background:#254A59;
@@ -48,7 +50,81 @@ body {
 }
 .setting-help:hover {
 	width:99%;
-	height:100%;
+	min-height:100%;
+}
+.setting-input-array-container {
+	text-align:center;
+}
+.setting-name-array {
+	margin-bottom:20px;
+}
+.setting-input-array-addButton {
+	position:relative;
+	top:-20px;
+	clear:both;
+	background:#7F959E;
+	color:white;
+	margin:5px;
+	margin-bottom:-20px;
+	padding:5px;
+	transition-duration: .2s;
+	-webkit-transition-duration: .2s;
+	text-align:center;
+	cursor:pointer;
+	border-bottom:2px solid #5A696F;
+}
+.setting-input-array-addButton:hover {
+	background:#697A81;
+	border-bottom:2px solid #4C585E;
+}
+.setting-input-array {
+	float:none;
+	display:block;
+	margin-top:2px;
+	width:80%;
+	margin-bottom:4px;
+}
+.setting-input-array-remove {
+	position:relative;
+	top:-30px;
+	width:10%;
+	min-width:0;
+	transition-duration: .2s;
+	-webkit-transition-duration: .2s;
+	background:rgb(151, 2, 80);
+	border-bottom:2px solid rgb(100, 3, 54);
+	cursor:pointer;
+	color:rgb(253, 242, 242);
+}
+.setting-input-array-remove:hover {
+	background:rgb(173, 4, 93);
+}
+.setting-input-switch {
+	background:rgb(151, 2, 80);
+	color:rgb(253, 242, 242);
+	width:30px;
+	min-width:30px;
+	max-width:30px;
+	margin-left:10px;
+	padding-left:6px;
+	padding-right:6px;
+	padding-bottom:0px;
+	transition-duration: .2s;
+	-webkit-transition-duration: .2s;
+	text-align:center;
+	cursor:pointer;
+	border-bottom:2px solid rgb(100, 3, 54);
+}
+.setting-input-switch:hover {
+	background:rgb(173, 4, 93);
+}
+.setting-input-switch.on {
+	background:rgb(28, 194, 101);
+	border-bottom:2px solid rgb(22, 131, 70);
+	color:rgb(234, 255, 239);
+}
+.setting-input-switch.on:hover {
+	background:rgb(34, 216, 114);
 }
 .category {
 	margin:30px;
@@ -62,6 +138,8 @@ body {
 	padding:10px;
 	background:#1D5A73;
 	cursor:pointer;
+	transition-duration: .2s;
+	-webkit-transition-duration: .2s;
 }
 .settings-gobutton:hover {
 	background:#407185;
