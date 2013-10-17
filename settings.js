@@ -6,17 +6,6 @@ SQUARIFIC.settings.templates = {};
 SQUARIFIC.settings.init = function initSettings (settings, goButtonText, cb) {
 	settings = JSON.parse(JSON.stringify(settings));
 	var div = document.createElement("div");
-	var main = document.createElement("div");
-	main.className = "category";
-	main.appendChild(document.createTextNode("settings"));
-	div.appendChild(main)
-	for (var settingName in settings) {
-		if (!settings[settingName].type || settings[settingName].category) {
-			div.appendChild(SQUARIFIC.settings.returnDivOfSetting(settings[settingName], settingName, cb, "settings."));
-		} else {
-			main.appendChild(SQUARIFIC.settings.returnDivOfSetting(settings[settingName], settingName, cb, "settings."));
-		}
-	}
 	var button = document.createElement("div");
 	button.className = "settings-gobutton";
 	button.appendChild(document.createTextNode(goButtonText));
@@ -49,6 +38,17 @@ SQUARIFIC.settings.init = function initSettings (settings, goButtonText, cb) {
 		this(returnSettings);
 	}.bind(cb, settings));
 	div.appendChild(button);
+	var main = document.createElement("div");
+	main.className = "category";
+	main.appendChild(document.createTextNode("settings"));
+	div.appendChild(main)
+	for (var settingName in settings) {
+		if (!settings[settingName].type || settings[settingName].category) {
+			div.appendChild(SQUARIFIC.settings.returnDivOfSetting(settings[settingName], settingName, cb, "settings."));
+		} else {
+			main.appendChild(SQUARIFIC.settings.returnDivOfSetting(settings[settingName], settingName, cb, "settings."));
+		}
+	}
 	return div;
 };
 
