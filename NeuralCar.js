@@ -50,6 +50,9 @@ if (!Function.prototype.bind) {
 var SQUARIFIC = SQUARIFIC || {};
 
 SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, settings, board) {
+	window.onbeforeunload = function () {
+		return "Be carefull, if you leave this page your simulation will end!";
+	};
 	this.setSettings = function defaultSettings (s) {
 		settings = s = s || {};
 		settings.ai = s.ai = s.ai || {};
@@ -198,11 +201,14 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 	};
 	this.getInput = function getInput (car, board, cars) {
 		var inputNodes = this[settings.ai.type](car, board, cars);
-		for (var k = 0; k < network.length; k++) {
+		var netlength = network.length;
+		for (var k = 0; k < netlength; k++) {
 			var outputs = [];
-			for (var i = 0; i < network[k].length; i++) {
+			var netklength = network[k].length;
+			for (var i = 0; i < netklength; i++) {
 				var sum = network[k][i].bias;
-				for (var l = 0; l < network[k][i].weights.length; l++) {
+				var netkiweightlength = network[k][i].weights.length;
+				for (var l = 0; l < netkiweightlength; l++) {
 					sum += network[k][i].weights[l] * inputNodes[l];
 				}
 				outputs[i] = 1 / (1 + Math.exp(-sum));
@@ -233,23 +239,25 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 		var pixels = [];
 		var	width = car.image.width,
 			height = car.image.height,
-			startX = width / 2 - settings.ai.side * settings.ai.blockWidth,
-			startY = -settings.ai.front * settings.ai.blockLength,
+			startX = -settings.ai.side * settings.ai.blockWidth,
+			startY = -settings.ai.front * settings.ai.blockLength - height / 2,
 			xSteps = settings.ai.blockWidthCount,
 			ySteps = settings.ai.blockLengthCount,
 			xStep = settings.ai.blockWidth / (settings.ai.blockWidthCount - 1),
 			yStep = settings.ai.blockLength / (settings.ai.blockLengthCount - 1),
-			angleCos = Math.cos(car.angle),
-			angleSin = Math.sin(car.angle);
+			xmodAfter = car.x + width / 2,
+			ymodAfter = car.y + height / 2,
+			angleCos = car.angleCos,
+			angleSin = car.angleSin;
 		for (var x = 0; x < xSteps; x++) {
 			for (var y = 0; y < ySteps; y++) {
-				var coords = [startX + x * xStep - width / 2, startY + y * yStep - height / 2];
+				var coords = [startX + x * xStep, startY + y * yStep];
 				var xCoord = coords[0];
 				
 				coords[0] = coords[0] * angleCos - coords[1] * angleSin;
 				coords[1] = xCoord * angleSin + coords[1] * angleCos;
-				coords[0] = Math.round(coords[0] + car.x + width / 2);
-				coords[1] = Math.round(coords[1] + car.y + height / 2);
+				coords[0] = Math.round(coords[0] + xmodAfter);
+				coords[1] = Math.round(coords[1] + ymodAfter);
 				
 				coords[0] = board.ensureCoordInRange(coords[0], board.width);
 				coords[1] = board.ensureCoordInRange(coords[1], board.height);
@@ -268,22 +276,37 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 		
 		if (settings.collision) {
 			cars.sort(function (a, b) {
-				var axdis = a.x - car.x,
-					aydis = a.y - car.y,
-					bxdis = b.x - car.x,
-					bydis = b.y - car.y;
-				axdis = Math.min(Math.abs(axdis), Math.abs(board.width - axdis));
-				aydis = Math.min(Math.abs(aydis), Math.abs(board.height - aydis));
-				bxdis = Math.min(Math.abs(bxdis), Math.abs(board.width - bxdis));
-				bydis = Math.min(Math.abs(bydis), Math.abs(board.height - bydis));
+				var axdis = Math.abs(a.x - car.x),
+					aydis = Math.abs(a.y - car.y),
+					bxdis = Math.abs(b.x - car.x),
+					bydis = Math.abs(b.y - car.y);
+				axdis = Math.min(axdis, board.width - axdis);
+				aydis = Math.min(aydis, board.height - aydis);
+				bxdis = Math.min(bxdis, board.width - bxdis);
+				bydis = Math.min(bydis, board.height - bydis);
 				return Math.sqrt(axdis * axdis + aydis * aydis) - Math.sqrt(bxdis * bxdis + bydis * bydis);
 			});
 			
-			for (var k = 1; k < Math.min(6, cars.length); k++) {
+			var carlength = Math.min(6, cars.length);
+			for (var k = 1; k < carlength; k++) {
 				var axdis = cars[k].x - car.x,
 					aydis = cars[k].y - car.y;
-				axdis = axdis / Math.abs(axdis) * Math.min(Math.abs(axdis), Math.abs(board.width - axdis));
-				aydis = aydis / Math.abs(aydis) * Math.min(Math.abs(aydis), Math.abs(board.height - aydis));
+				var axdisa = board.width - Math.abs(axdis),
+					aydisa = board.height - Math.abs(aydis);
+				if (Math.abs(axdis) > axdisa) {
+					if (axdis < 0) {
+						axdis = axdisa;
+					} else {
+						axdis = -axdisa;
+					}
+				}
+				if (Math.abs(aydis) > aydisa) {
+					if (aydis < 0) {
+						aydis = aydisa;
+					} else {
+						aydis = -aydisa;
+					}
+				}
 				nodes.push(2 * (axdis) / board.width);
 				nodes.push(2 * (aydis) / board.height);
 				nodes.push((cars[k].angle % (Math.PI * 2)) / (Math.PI * 2));
@@ -395,13 +418,15 @@ SQUARIFIC.Car = function Car (brain, settings) {
 		this.angleCos = Math.cos(this.angle);
 		this.angleSin = Math.sin(this.angle);
 		
-		var average = board.average(this.x, this.y, this.angle, this.image.width, this.image.height, settings.car.averageWidth, settings.car.averageHeight, this, cars);
-		if (Math.abs(this.velocity) > average * this.maxSpeed) {
-			this.velocity = (this.velocity / Math.abs(this.velocity)) * average * this.maxSpeed;
+		var average = board.average(this.x, this.y, this.image.width, this.image.height, settings.car.averageWidth, settings.car.averageHeight, this, cars) * this.maxSpeed;
+		if (this.velocity > average) {
+			this.velocity = average;
+		} else if (this.velocity < -average) {
+			this.velocity = -average;
 		}
 		
-		this.x += this.velocity * Math.sin(this.angle) * stepSize;
-		this.y -= this.velocity * Math.cos(this.angle) * stepSize;
+		this.x += this.velocity * this.angleSin * stepSize;
+		this.y -= this.velocity * this.angleCos * stepSize;
 		
 		this.x = board.ensureCoordInRange(this.x, board.width);
 		this.y = board.ensureCoordInRange(this.y, board.height);
@@ -573,24 +598,28 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 		return 0;
 	};
 	
-	this.average = function average (xA, yA, angle, width, height, xSteps, ySteps, car, cars) {
+	this.average = function average (xA, yA, width, height, xSteps, ySteps, car, cars) {
 		var pixels = [], collisions = 0;
-		xSteps = Math.round(Math.abs(xSteps)) || 2;
-		ySteps = Math.round(Math.abs(ySteps)) || 2;
-		var xStep = Math.abs(width) / (xSteps - 1);
-		var yStep = Math.abs(height) / (ySteps - 1);
+		xSteps = xSteps || 2;
+		ySteps = ySteps || 2;
+		var xStep = width / (xSteps - 1);
+		var yStep = height / (ySteps - 1);
 		var angleCos = car.angleCos;
 		var angleSin = car.angleSin;
 		var sum = 0;
+		var xmodBefore = width / 2,
+			ymodBefore = height / 2;
+		var xmodAfter = xA + width / 2,
+			ymodAfter = yA + height / 2;
 		for (var x = 0; x < xSteps; x++) {
 			for (var y = 0; y < ySteps; y++) {
-				var coords = [x * xStep - width / 2, y * yStep - height / 2];
+				var coords = [x * xStep - xmodBefore, y * yStep - ymodBefore];
 				var xCoord = coords[0];
 				
 				coords[0] = coords[0] * angleCos - coords[1] * angleSin;
 				coords[1] = xCoord * angleSin + coords[1] * angleCos;
-				coords[0] = Math.round(coords[0] + xA + width / 2);
-				coords[1] = Math.round(coords[1] + yA + height / 2);
+				coords[0] = Math.round(coords[0] + xmodAfter);
+				coords[1] = Math.round(coords[1] + ymodAfter);
 				
 				coords[0] = this.ensureCoordInRange(coords[0], this.width);
 				coords[1] = this.ensureCoordInRange(coords[1], this.height);
@@ -618,7 +647,8 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 				new SAT.V((angleCos *  xmodbef) - (angleSin *  ymodbef) + xmod, (angleSin *  xmodbef) + (angleCos *  ymodbef) + ymod),
 				new SAT.V((angleCos * -xmodbef) - (angleSin *  ymodbef) + xmod, (angleSin * -xmodbef) + (angleCos *  ymodbef) + ymod)
 			]);
-			for (var k = 0; k < cars.length; k++) {
+			var carslength = cars.length;
+			for (var k = 0; k < carslength; k++) {
 				var angleCos = cars[k].angleCos;
 				var angleSin = cars[k].angleSin;
 				var xmodbef = cars[k].image.width / 2;

@@ -7,6 +7,8 @@ Todo:
 =====
 
 	*) Pacman like dots that give points
+	*) Go from blue to purple slightly showing a cars progress
 	*) Better maps (image)
 	*) Progress bar
 	*) Performance
+	*) onleave
