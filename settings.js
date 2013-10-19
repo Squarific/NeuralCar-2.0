@@ -110,6 +110,7 @@ SQUARIFIC.settings.templates.switch = function (settingOptions, settingName, cb,
 	input.classList.add("setting-input-switch");
 	input.classList.add("setting-input-" + settingName);
 	input.innerHTML = settingOptions.value ? "On" : "Off";
+	settingOptions.value ? input.classList.add("on") : input.classList.remove("on");
 	for (var option in settingOptions) {
 		input[option] = settingOptions[option];
 	}

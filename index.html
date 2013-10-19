@@ -6,20 +6,21 @@
 		<link href='http://fonts.googleapis.com/css?family=Orbitron:700' rel='stylesheet' type='text/css'>
 		
 		<script src="NeuralCar.js"></script>
-		<script src="NeuralCarRoadBoard.js"></script>
+		<script src="SAT.js"></script>
 		<script src="settings.js"></script>
 		<script>
 			var neuralCarSettingsObject = {
-				cars: {type: "number", value: 100, min: 0, help: "Amount of cars."},
+				cars: {type: "number", value: 82, min: 0, help: "Amount of cars."},
 				runSpeed: {type: "float", value: 1, help: "How fast the simulation runs (higher than 10 is not advisable unless you have a very strong overclocked cpu)"},
 				stepSize: {type: "number", value: 1000 / 20, min: 1, help: "Ms per physics frame"},
 				generationTime: {type: "number", value: 12000, min: 1, help: "Ms per generation"},
 				mutationRate: {type: "float", value: 1.4, help: "Rate at which the brains mutate and differentiate from the top cars (can be negative)"},
-				boardWidth: {type: "number", value: 1200, min: 50, help: "Width of the board"},
-				boardHeight: {type: "number", value: 600, min: 50, help: "Height of the board"},
+				boardWidth: {type: "number", value: 850, min: 50, help: "Width of the board"},
+				boardHeight: {type: "number", value: 550, min: 50, help: "Height of the board"},
 				retireAfterGenerations: {type: "number", value: 20, min: 0, help: "Amount of generations a car has to be in the top before turning purple and being considered 'mature'"},
 				keepTop: {type: "float", value: 0.1, help: "Value between 0 and 1, 1 = all cars become top, 0 = none, 0.1 = 10%, 0.2 = 20%, etc."},
 				minimumMutation: {type: "float", value: 0.01, help: "Minimum value of a bias/weight when mutating."},
+				collision: {type: "switch", value: true, help: "Do the cars collide or can they drive over eachother? Collision reduces the performance to about 50% (!)"},
 				ai: {
 					category: true,
 					type: {type: "text", value: "blockVision", help: "Currently only the 'blockVision' ai has been implemented.", disabled: true},
@@ -47,12 +48,13 @@
 				},
 				brain: {
 					category: true,
-					structure: {type: "array", arrayType: "number", value: [26], help: "Hidden layers of the network"}
+					structure: {type: "array", arrayType: "number", value: [42], help: "Hidden layers of the network"}
 				},
 				debugging: {
 					category: true,
 					drawAveragePixels: {type: "switch", value: false, help: "Draw the pixels used for the detection of the max speed (leaves a trail where cars have driven)"},
-					drawVisionPixels: {type: "switch", value: false, help: "Draw the pixels that a car uses for vision (blockVision)"}
+					drawVisionPixels: {type: "switch", value: false, help: "Draw the pixels that a car uses for vision (blockVision)"},
+					playerCar: {type: "switch", value: true, help: "Draw the pixels that a car uses for vision (blockVision)"}
 				},
 				roadBoard: {
 					roadBoardJson: {type:"text", value: '', help: "RoadMapEditorJSON output"}
@@ -74,7 +76,7 @@
 			Welcome to neural car 2.0.<br/><br/>
 			For the source code, visit: <a href="https://github.com/Squarific/NeuralCar-2.0">https://github.com/Squarific/NeuralCar-2.0</a><br/><br/>
 			Info: <br/>
-			The cars each have their own neural network. The top cars (blue) are copied randomly by the red cars and slightly mutated. When a car is in the top long enough it will retire and turn purple after which it will no longer change.
+			The cars each have their own neural network. The top cars (blue) are copied randomly by the red cars and slightly mutated. When a car is in the top long enough it will retire and turn purple after which it will no longer change or be used to copy by other cars.
 			<br/><br/>
 			If  you have questions, do not hesitate to contact:
 			<a href="mailto:alemaaltevinden@gmail.com">alemaaltevinden@gmail.com</a>

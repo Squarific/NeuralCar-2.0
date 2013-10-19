@@ -7,6 +7,6 @@ Todo:
 =====
 
 	*) Pacman like dots that give points
-	*) Collision
 	*) Better maps (image)
 	*) Progress bar
+	*) Performance
