@@ -500,6 +500,8 @@ SQUARIFIC.Car = function Car (brain, settings) {
 SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarInstance) {
 	carArray = carArray || [];
 	settings.cars = settings.cars || 10;
+	var startColor = [96, 190, 207];
+	var endColor = [85, 55, 112];
 	this.genNumber = 0;
 	this.lastGenerationTime = Date.now();
 	this.now = Date.now();
@@ -543,8 +545,11 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 			if ((k - ignored) / (carArray.length - uncount) <= settings.keepTop) {
 				carArray[k].lastScore = carArray[k].score;
 				carArray[k].score = 0;
-				carArray[k].changeColor("blue");
 				carArray[k].bestLength++;
+				var r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * (carArray[k].bestLength / settings.retireAfterGenerations)),
+					g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * (carArray[k].bestLength / settings.retireAfterGenerations)),
+					b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * (carArray[k].bestLength / settings.retireAfterGenerations));
+				carArray[k].changeColor("rgb(" + r + ", " + g + ", " + b + ")");
 				if (carArray[k].bestLength > settings.retireAfterGenerations && carArray[k].lastScore !== 0) {
 					carArray[k].training = false;
 					carArray[k].changeColor("#752175");
