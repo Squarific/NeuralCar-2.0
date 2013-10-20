@@ -13,3 +13,5 @@ Todo:
 	*) Traffic lights
 	*) Find better default values (especially when collision is activated)
 	*) Write how it works
+	*) Remove/add cars during simulation
+	*) Remove/add player car during simulation
