@@ -11,3 +11,4 @@ Todo:
 	*) Better maps (image)
 	*) Progress bar
 	*) Performance
+	*) Change settings while running simulation

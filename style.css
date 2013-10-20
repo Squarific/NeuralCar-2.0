@@ -1,6 +1,21 @@
 body {
 	font-family: 'Orbitron', sans-serif;
 }
+#changeSettings { 
+	position:fixed;
+	right:20px;
+	top:10px;
+	width:30%;
+	min-width:200px;
+	background:rgba(39, 46, 75, 0.53);
+	border:1px solid rgb(66, 55, 65);
+	border-bottom:none;
+	height:100px;
+	color:white;
+	font-size:14px;
+	padding:5px;
+	overflow:auto;
+}
 #settings {
 	position:absolute;
 	left:0;
@@ -16,20 +31,21 @@ body {
 #console {
 	position:fixed;
 	right:20px;
-	top:20px;
+	top:120px;
 	width:30%;
 	min-width:200px;
-	background:rgba(38, 22, 121, 0.5);
-	border:1px solid white;
-	max-height:80%;
+	background:rgba(39, 46, 75, 0.53);
+	border:1px solid rgb(66, 55, 65);
+	border-top:none;
+	max-height:60%;
 	color:white;
 	font-size:14px;
 	padding:5px;
 	overflow:auto;
 }
 .console-message {
-	display:inline-block;
-	margin-top:5px;
+	display:block;
+	padding:2px;
 }
 a {
 	color:white;
@@ -162,7 +178,7 @@ a:hover {
 	vertical-align:text-top;
 }
 .settings-gobutton {
-	margin:30px;
+	margin:20px;
 	padding:10px;
 	background:#1D5A73;
 	cursor:pointer;
@@ -172,4 +188,14 @@ a:hover {
 }
 .settings-gobutton:hover {
 	background:#407185;
+}
+.runSpeed-button {
+	margin:0;
+	float:right;
+}
+.runSpeed-switch {
+	padding:5px;
+	min-width:60px;
+	float:right;
+	margin-top:3px;
 }

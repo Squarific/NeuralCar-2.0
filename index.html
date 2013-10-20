@@ -10,18 +10,19 @@
 		<script src="settings.js"></script>
 		<script>
 			var neuralCarSettingsObject = {
-				cars: {type: "number", value: 70, min: 0, help: "Amount of cars."},
+				cars: {type: "number", value: 90, min: 0, help: "Amount of cars."},
 				runSpeed: {type: "float", value: 1, help: "How fast the simulation runs (higher than 10 is not advisable unless you have a very strong overclocked cpu)"},
-				stepSize: {type: "number", value: 1000 / 20, min: 1, help: "Ms per physics frame"},
-				generationTime: {type: "number", value: 12000, min: 1, help: "Ms per generation"},
+				stepSize: {type: "number", value: Math.round(1000 / 15), min: 1, help: "Ms per physics frame"},
+				generationTime: {type: "number", value: 15000, min: 1, help: "Ms per generation"},
 				mutationRate: {type: "float", value: 1.4, help: "Rate at which the brains mutate and differentiate from the top cars (can be negative)"},
 				boardWidth: {type: "number", value: 850, min: 50, help: "Width of the board"},
 				boardHeight: {type: "number", value: 550, min: 50, help: "Height of the board"},
 				retireAfterGenerations: {type: "number", value: 20, min: 0, help: "Amount of generations a car has to be in the top before turning purple and being considered 'mature'"},
 				keepTop: {type: "float", value: 0.1, help: "Value between 0 and 1, 1 = all cars become top, 0 = none, 0.1 = 10%, 0.2 = 20%, etc."},
 				minimumMutation: {type: "float", value: 0.01, help: "Minimum value of a bias/weight when mutating."},
-				collision: {type: "switch", value: false, help: "Do the cars collide or can they drive over eachother? Collision reduces the performance to about 50% (!)"},
-				cantKeepUp: {type: "number", value: 5, min: 1, help: "Adjust runSpeed when this amount of frames in a row are calculated slower than stepSize"},
+				collision: {type: "switch", value: true, help: "Do the cars collide or can they drive over eachother? Collision reduces the performance to about 50% (!)"},
+				cantKeepUp: {type: "number", value: 4, min: 1, help: "Adjust runSpeed when this amount of frames in a row are calculated slower than stepSize"},
+				maxRunspeed: {type: "switch", value: true, help: "Should the simulation try to get the runspeed to be as high as possible?"},
 				ai: {
 					category: true,
 					type: {type: "text", value: "blockVision", help: "Currently only the 'blockVision' ai has been implemented.", disabled: true},
@@ -55,17 +56,34 @@
 					category: true,
 					drawAveragePixels: {type: "switch", value: false, help: "Draw the pixels used for the detection of the max speed (leaves a trail where cars have driven)"},
 					drawVisionPixels: {type: "switch", value: false, help: "Draw the pixels that a car uses for vision (blockVision)"},
-					playerCar: {type: "switch", value: true, help: "Draw the pixels that a car uses for vision (blockVision)"}
-				},
-				roadBoard: {
-					roadBoardJson: {type:"text", value: '', help: "RoadMapEditorJSON output"}
+					playerCar: {type: "switch", value: false, help: "Add a user controllable car"}
 				}
 			};
 			function startup () {
 				document.getElementById("settings").appendChild(SQUARIFIC.settings.init(neuralCarSettingsObject, 'Start Simulation', function (settings) {
 					SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), document.getElementById("console"), settings);
-					var settings = document.getElementById("settings");
-					settings.parentNode.removeChild(settings);
+					var settingsDiv = document.getElementById("settings");
+					settingsDiv.parentNode.removeChild(settingsDiv);
+					document.getElementById('runSpeed-input').value = parseFloat(settings.runSpeed);
+					var m = document.getElementById('maxRunspeed-input');
+					if (settings.maxRunspeed) {
+						m.innerHTML = "On";
+						m.classList.add("on");
+						m.eff = true;
+					}
+					m.addEventListener("click", function (event) {
+						if (event.target.eff) {
+							event.target.eff = false;
+							event.target.classList.remove("on");
+							event.target.innerHTML = "Off";
+							SQUARIFIC.neuralCar.getSettings().maxRunspeed = false;
+						} else {
+							event.target.eff = true;
+							event.target.classList.add("on");
+							event.target.innerHTML = "On";
+							SQUARIFIC.neuralCar.getSettings().maxRunspeed = true;
+						}
+					});
 				}));
 			}
 		</script>
@@ -84,6 +102,12 @@
 			<br/><br/>
 			Logs:
 			<br/><br/>
+		</div>
+		<div id="changeSettings">
+			<input id="runSpeed-input" value="1">
+			<div class="settings-goButton runSpeed-button" onclick="SQUARIFIC.neuralCar.runSpeed = parseFloat(document.getElementById('runSpeed-input').value) || 1; SQUARIFIC.neuralCar.console.log('New runspeed: ' + SQUARIFIC.neuralCar.runSpeed)">Set runspeed</div>
+			<div style="clear:both;"></div>
+			Max runspeed: <div id="maxRunspeed-input" class="setting-input-switch runSpeed-switch">Off</div>
 		</div>
 		<div id="settings">
 		</div>

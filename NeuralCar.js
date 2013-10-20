@@ -98,7 +98,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 		settings.brain.structure = s.brain.structure || [42];
 		settings.brain.structure.push(2);
 		
-		this.runSpeed = parseInt(s.runSpeed) || 1;
+		this.runSpeed = parseFloat(s.runSpeed) || 1;
 	}
 	this.setSettings(settings);
 	
@@ -117,6 +117,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 	
 	this.lastUpdate = Date.now();
 	this.tooLong = 0;
+	this.longer = 0;
 	this.step = function neuralCarStep (stepSize) {
 		var changed = false;
 		this.screen.clearFrontOnNextChange();
@@ -131,12 +132,20 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 			if (Date.now() - time > stepSize / this.runSpeed) {
 				this.tooLong++;
 				if (this.tooLong > settings.cantKeepUp) {
-					this.runSpeed = this.runSpeed / ((Date.now() - time + 5) / stepSize);
-					this.console.log("Couldn't keep up (lower the amount of cars, raise the stepSize or deactivate heavy features such as collision), changed runSpeed to " + this.runSpeed);
+					this.runSpeed = Math.floor(this.runSpeed / ((Date.now() - time + 5) / (stepSize / this.runSpeed)) * 1000) / 1000;
+					this.console.log("Couldn't keep up, lowered runSpeed to " + this.runSpeed);
 					this.tooLong = 0;
 				}
 			} else {
 				this.tooLong = 0;
+				if (settings.maxRunspeed && this.runSpeed < 8 && Date.now() - time < stepSize / (this.runSpeed + 2)) {
+					this.longer++;
+					if (this.longer > 150 * this.runSpeed) {
+						this.runSpeed = Math.floor((this.runSpeed + 0.5) * 1000) / 1000;
+						this.console.log("Raised runSpeed to " + this.runSpeed);
+						this.longer = 0;
+					}
+				}
 			}
 		}
 		if (changed) {
@@ -288,22 +297,33 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 		}
 		
 		if (settings.collision) {
-			cars.sort(function (a, b) {
-				var axdis = Math.abs(a.x - car.x),
-					aydis = Math.abs(a.y - car.y),
-					bxdis = Math.abs(b.x - car.x),
-					bydis = Math.abs(b.y - car.y);
-				axdis = Math.min(axdis, board.width - axdis);
-				aydis = Math.min(aydis, board.height - aydis);
-				bxdis = Math.min(bxdis, board.width - bxdis);
-				bydis = Math.min(bydis, board.height - bydis);
-				return Math.sqrt(axdis * axdis + aydis * aydis) - Math.sqrt(bxdis * bxdis + bydis * bydis);
+			var carsCopy = [];
+			var carsLength = cars.length;
+			for (var k = 0; k < carsLength; k++) {
+				carsCopy.push({car: cars[k]});
+			}
+			carsCopy.sort(function (a, b) {
+				if (!a.dis) {
+					var axdis = Math.abs(a.car.x - car.x),
+						aydis = Math.abs(a.car.y - car.y);
+					axdis = Math.min(axdis, board.width - axdis);
+					aydis = Math.min(aydis, board.height - aydis);
+					a.dis = Math.sqrt(axdis * axdis + aydis * aydis);
+				}
+				if (!b.dis) {
+					var bxdis = Math.abs(b.car.x - car.x),
+						bydis = Math.abs(b.car.y - car.y);
+					bxdis = Math.min(bxdis, board.width - bxdis);
+					bydis = Math.min(bydis, board.height - bydis);
+					b.dis = Math.sqrt(bxdis * bxdis + bydis * bydis);
+				}
+				return a.dis - b.dis;
 			});
-			
-			var carlength = Math.min(6, cars.length);
+
+			var carlength = Math.min(6, carsCopy.length);
 			for (var k = 1; k < carlength; k++) {
-				var axdis = cars[k].x - car.x,
-					aydis = cars[k].y - car.y;
+				var axdis = carsCopy[k].car.x - car.x,
+					aydis = carsCopy[k].car.y - car.y;
 				var axdisa = board.width - Math.abs(axdis),
 					aydisa = board.height - Math.abs(aydis);
 				if (Math.abs(axdis) > axdisa) {
@@ -342,6 +362,7 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 
 SQUARIFIC.PlayerInput = function PlayerInput () {
 	this.keysPressed = {};
+	var prevents = [37, 38, 39, 40];
 	this.inputs = {
 		acceleration: 0,
 		turning: 0
@@ -374,7 +395,11 @@ SQUARIFIC.PlayerInput = function PlayerInput () {
 	this.keydown = function keydown (event) {
 		this.keysPressed[event.keyCode] = true;
 		this.update();
-		event.preventDefault();
+		for (var k = 0; k < prevents.length; k++) {
+			if (prevents[k] === event.keyCode) {
+				event.preventDefault();
+			}
+		}
 	};
 	this.keyup = function keyup (event) {
 		this.keysPressed[event.keyCode] = false;
@@ -677,6 +702,9 @@ SQUARIFIC.Board = function Board (board, settings, neuralCarInstance) {
 					new SAT.V((angleCos * -xmodbef) - (angleSin *  ymodbef) + xmod, (angleSin * -xmodbef) + (angleCos *  ymodbef) + ymod)
 				]))) {
 					collisions++;
+					if (collisions > 2) {
+						break;
+					}
 				}
 			}
 		}
