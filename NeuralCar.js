@@ -92,9 +92,8 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 		settings.board.streetWidth = parseFloat(s.board.streetWidth) || 4.5;
 
 		settings.brain.inputStructure = s.brain.inputStructure || settings.ai.blockLengthCount * settings.ai.blockWidthCount || 48;
-		if (settings.collision) {
-			settings.brain.inputStructure += 22;
-		}
+		settings.brain.inputStructure += 22;
+
 		settings.brain.structure = s.brain.structure || [42];
 		settings.brain.structure.push(2);
 		
@@ -354,6 +353,10 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 			
 			nodes.push((car.angle % (Math.PI * 2)) / (Math.PI * 2));
 			nodes.push(car.velocity / car.maxSpeed);
+		} else {
+			for (var k = 0; k < 22; k++) {
+				nodes.push(0);
+			}
 		}
 		
 		return nodes;
