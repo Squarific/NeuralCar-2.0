@@ -9,5 +9,5 @@ Todo:
 	*) Pacman like dots that give points
 	*) Better maps (image)
 	*) Progress bar
-	*) Performance
 	*) Change settings while running simulation
+	*) Traffic lights

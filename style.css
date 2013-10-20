@@ -1,5 +1,6 @@
 body {
 	font-family: 'Orbitron', sans-serif;
+	background:rgb(57, 64, 66);
 }
 #changeSettings { 
 	position:fixed;
@@ -8,9 +9,9 @@ body {
 	width:30%;
 	min-width:200px;
 	background:rgba(39, 46, 75, 0.53);
-	border:1px solid rgb(66, 55, 65);
+	border:1px solid rgb(147, 157, 163);
 	border-bottom:none;
-	height:100px;
+	height:105px;
 	color:white;
 	font-size:14px;
 	padding:5px;
@@ -31,11 +32,11 @@ body {
 #console {
 	position:fixed;
 	right:20px;
-	top:120px;
+	top:125px;
 	width:30%;
 	min-width:200px;
 	background:rgba(39, 46, 75, 0.53);
-	border:1px solid rgb(66, 55, 65);
+	border:1px solid rgb(147, 157, 163);
 	border-top:none;
 	max-height:60%;
 	color:white;
@@ -64,7 +65,10 @@ a:hover {
 .setting-input {
 	float:right;
 	min-width:100px;
-	padding:2px;
+	padding:5px;
+	border:none;
+	text-align:right;
+	margin-top:-3px;
 }
 .setting-name {
 	display:inline-block;
@@ -179,6 +183,7 @@ a:hover {
 }
 .settings-gobutton {
 	margin:20px;
+	margin-bottom:0px;
 	padding:10px;
 	background:#1D5A73;
 	cursor:pointer;
