@@ -11,4 +11,3 @@ Todo:
 	*) Better maps (image)
 	*) Progress bar
 	*) Performance
-	*) onleave

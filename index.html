@@ -10,7 +10,7 @@
 		<script src="settings.js"></script>
 		<script>
 			var neuralCarSettingsObject = {
-				cars: {type: "number", value: 82, min: 0, help: "Amount of cars."},
+				cars: {type: "number", value: 70, min: 0, help: "Amount of cars."},
 				runSpeed: {type: "float", value: 1, help: "How fast the simulation runs (higher than 10 is not advisable unless you have a very strong overclocked cpu)"},
 				stepSize: {type: "number", value: 1000 / 20, min: 1, help: "Ms per physics frame"},
 				generationTime: {type: "number", value: 12000, min: 1, help: "Ms per generation"},
@@ -20,7 +20,8 @@
 				retireAfterGenerations: {type: "number", value: 20, min: 0, help: "Amount of generations a car has to be in the top before turning purple and being considered 'mature'"},
 				keepTop: {type: "float", value: 0.1, help: "Value between 0 and 1, 1 = all cars become top, 0 = none, 0.1 = 10%, 0.2 = 20%, etc."},
 				minimumMutation: {type: "float", value: 0.01, help: "Minimum value of a bias/weight when mutating."},
-				collision: {type: "switch", value: true, help: "Do the cars collide or can they drive over eachother? Collision reduces the performance to about 50% (!)"},
+				collision: {type: "switch", value: false, help: "Do the cars collide or can they drive over eachother? Collision reduces the performance to about 50% (!)"},
+				cantKeepUp: {type: "number", value: 5, min: 1, help: "Adjust runSpeed when this amount of frames in a row are calculated slower than stepSize"},
 				ai: {
 					category: true,
 					type: {type: "text", value: "blockVision", help: "Currently only the 'blockVision' ai has been implemented.", disabled: true},

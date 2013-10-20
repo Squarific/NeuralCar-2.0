@@ -61,7 +61,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 		settings.board = s.board = s.board || {};
 		settings.debugging = s.debugging = s.debugging || {};
 		
-		settings.cars = parseInt(s.cars) || 100;
+		settings.cars = parseInt(s.cars) || 50;
 		settings.stepSize = parseInt(s.stepSize) || 1000 / 20;
 		settings.generationTime = parseInt(s.generationTime) || (16 - 8/2) * 1000; //(16 - 8/2) is the new 12 for the cool programmers
 		settings.mutationRate = parseFloat(s.mutationRate) || 1.4;
@@ -70,7 +70,7 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 		settings.retireAfterGenerations = parseInt(s.retireAfterGenerations) || 14;
 		settings.keepTop = parseFloat(s.keepTop) || 0.1;
 		settings.minimumMutation = parseFloat(settings.minimumMutation) || 0.01;
-		settings.collision = settings.collision || true;
+		settings.cantKeepUp = settings.cantKeepUp || 3;
 		
 		settings.car.width = parseInt(s.car.width) || 10;
 		settings.car.length = parseInt(s.car.length) || 20;
@@ -98,8 +98,6 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 		settings.brain.structure = s.brain.structure || [42];
 		settings.brain.structure.push(2);
 		
-		settings.debugging.playerCar = s.debugging.playerCar || true;
-		
 		this.runSpeed = parseInt(s.runSpeed) || 1;
 	}
 	this.setSettings(settings);
@@ -111,20 +109,35 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 	
 	this.screen.drawBackground(this.board);
 	
-	var playerCar = new SQUARIFIC.Car(new SQUARIFIC.PlayerInput(), settings);
-	playerCar.changeColor("brown");
-	this.carCollection.add(playerCar);
+	if (settings.debugging.playerCar) {
+		var playerCar = new SQUARIFIC.Car(new SQUARIFIC.PlayerInput(), settings);
+		playerCar.changeColor("brown");
+		this.carCollection.add(playerCar);
+	}
 	
 	this.lastUpdate = Date.now();
+	this.tooLong = 0;
 	this.step = function neuralCarStep (stepSize) {
 		var changed = false;
 		this.screen.clearFrontOnNextChange();
 		var timeDifference = (Date.now() - this.lastUpdate) * this.runSpeed;
 		while (timeDifference - stepSize > 0) {
+			var time = Date.now();
 			changed = true;
 			this.carCollection.step(stepSize, this.board);
 			timeDifference -= stepSize;
 			this.lastUpdate += (stepSize / this.runSpeed);
+			
+			if (Date.now() - time > stepSize / this.runSpeed) {
+				this.tooLong++;
+				if (this.tooLong > settings.cantKeepUp) {
+					this.runSpeed = this.runSpeed / ((Date.now() - time + 5) / stepSize);
+					this.console.log("Couldn't keep up (lower the amount of cars, raise the stepSize or deactivate heavy features such as collision), changed runSpeed to " + this.runSpeed);
+					this.tooLong = 0;
+				}
+			} else {
+				this.tooLong = 0;
+			}
 		}
 		if (changed) {
 			this.screen.drawCars(this.carCollection.getCars());
@@ -464,6 +477,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 	settings.cars = settings.cars || 10;
 	this.genNumber = 0;
 	this.lastGenerationTime = Date.now();
+	this.now = Date.now();
 	this.startTime = Date.now();
 	this.add = function addCar (car, training) {
 		carArray.push(car);
@@ -472,15 +486,16 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 	};
 	this.step = function carCollectionStep (stepSize, board) {
 		var carArrayCopy = [];
+		this.now += stepSize;
 		for (var k = 0; k < carArray.length; k++) {
 			carArrayCopy.push(carArray[k]);
 		}
 		for (var k = 0; k < carArray.length; k++) {
 			carArray[k].step(stepSize, board, carArrayCopy);
 		}
-		if (Date.now() - this.lastGenerationTime > settings.generationTime / neuralCarInstance.runSpeed) {
+		if (this.now - this.lastGenerationTime > settings.generationTime / neuralCarInstance.runSpeed) {
 			this.newGeneration();
-			this.lastGenerationTime = Date.now();
+			this.lastGenerationTime = this.now;
 		}
 	};
 	this.newGeneration = function newGeneration () {
@@ -519,7 +534,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 				carArray[k].bestLength = 0;
 			}
 		}
-		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + Math.round(topList[0].lastScore * 100) / 100 + ", runtime: " + Math.round((Date.now() - this.startTime) / 1000) + " seconds");
+		neuralCarInstance.console.log("Generation #" + this.genNumber + ", best score: " + Math.round(topList[0].lastScore * 100) / 100 + ", runtime: " + Math.round((this.now - this.startTime) / 1000) + " seconds");
 	};
 	this.bestCar = function bestCar () {
 		var best;
