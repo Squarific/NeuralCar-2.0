@@ -138,10 +138,10 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 				}
 			} else {
 				this.tooLong = 0;
-				if (settings.maxRunspeed && this.runSpeed < 8 && Date.now() - time < stepSize / (this.runSpeed + 2)) {
+				if (settings.maxRunspeed && this.runSpeed < 8 && Date.now() - time < stepSize / (this.runSpeed + 0.5)) {
 					this.longer++;
 					if (this.longer > 150 * this.runSpeed) {
-						this.runSpeed = Math.floor((this.runSpeed + 0.5) * 1000) / 1000;
+						this.runSpeed = Math.floor((this.runSpeed + 0.2) * 1000) / 1000;
 						this.console.log("Raised runSpeed to " + this.runSpeed);
 						this.longer = 0;
 					}
