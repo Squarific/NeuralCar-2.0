@@ -21,3 +21,9 @@ Todo:
 	*) Write how it works
 	*) Remove/add cars during simulation
 	*) Remove/add player car during simulation
+	
+Donations:
+==========
+
+If you got btc you don't use feel free to donate some to me
+1KtsEFzL8LCCaoy6G3Zf5K6rcUbZSAF5He 
