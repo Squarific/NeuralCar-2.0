@@ -182,6 +182,7 @@ a:hover {
 	vertical-align:text-top;
 }
 .settings-gobutton {
+	text-decoration:none;
 	margin:20px;
 	margin-bottom:0px;
 	padding:10px;
@@ -193,6 +194,7 @@ a:hover {
 }
 .settings-gobutton:hover {
 	background:#407185;
+	color:white;
 }
 .runSpeed-button {
 	margin:0;
