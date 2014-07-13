@@ -62,6 +62,9 @@
 			};
 			function startup () {
 				document.getElementById("settings").appendChild(SQUARIFIC.settings.init(neuralCarSettingsObject, 'Start Simulation', function (settings) {
+					if (typeof ga === "function") {
+						ga("send", "event", "neuralcar", "neuralcar-2-simulation-start");
+					}
 					SQUARIFIC.neuralCar = new SQUARIFIC.NeuralCar(document.getElementById('backCanvas'), document.getElementById('frontCanvas'), document.getElementById("console"), settings);
 					var settingsDiv = document.getElementById("settings");
 					settingsDiv.parentNode.removeChild(settingsDiv);
