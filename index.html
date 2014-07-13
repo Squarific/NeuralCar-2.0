@@ -4,7 +4,8 @@
 		
 		<link href="style.css" rel="stylesheet" />
 		<link href='http://fonts.googleapis.com/css?family=Orbitron:700' rel='stylesheet' type='text/css'>
-		
+		<link href='http://fonts.googleapis.com/css?family=Arapey' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="projects.css" />
 		<script src="NeuralCar.js"></script>
 		<script src="SAT.js"></script>
 		<script src="settings.js"></script>
@@ -109,8 +110,12 @@
 		</script>
 	</head>
 	<body onload="startup()">
-		<canvas style="position:absolute; left:0; top:0;" id="backCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
-		<canvas style="position:absolute; left:0; top:0;" id="frontCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
+		<center>
+			<div class="wrapper">
+				<canvas id="backCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
+				<canvas style="position:absolute; left:0; top:0;" id="frontCanvas">Your browser is not supported, please upgrade to a more modern browser.</canvas>
+			</div>
+		</center>
 		<div id="console">
 			Welcome to neural car 2.0.<br/><br/>
 			For the source code, visit: <a href="https://github.com/Squarific/NeuralCar-2.0">https://github.com/Squarific/NeuralCar-2.0</a><br/><br/>
@@ -127,6 +132,7 @@
 			<br/><br/>
 		</div>
 		<div id="changeSettings">
+			<a href="http://www.squarific.com" style="text-decoration:none;"><div class="settings-gobutton equalmargin">Check out my other projects!</div></a>
 			<input id="runSpeed-input" class="setting-input" style="float:none; margin-top:5px;" value="1">
 			<div class="settings-goButton runSpeed-button" onclick="SQUARIFIC.neuralCar.runSpeed = parseFloat(document.getElementById('runSpeed-input').value) || 1; SQUARIFIC.neuralCar.console.log('New runspeed: ' + SQUARIFIC.neuralCar.runSpeed)">Set runspeed</div>
 			<div style="clear:both;"></div>
@@ -136,6 +142,38 @@
 		</div>
 		<div id="settings">
 			<a href="http://www.squarific.com" style="text-decoration:none;"><div class="settings-gobutton">Check out my other projects!</div></a>
+		</div>
+		<div style="clear:both;"></div>
+		<div class="projects">
+			<div class="subtitle">Check out some other projects:</div>
+			<a href="/" class="project" title="Squarific Homepage">
+				<img src="screens/squarific.png" alt="Squarific">
+				<div class="label">Name:</div>
+				Squarific homepage
+				<div class="label">Description:</div>
+				A collection of my best projects.
+			</a>
+			<a href="/simplelogic/" class="project" title="NeuralCar">
+				<img src="screens/simplelogic.png" alt="SimpleLogic"/>
+				<div class="label">Name:</div>
+				SimpleLogic (Open Source)
+				<div class="label">Description:</div>
+				Logic gates simulation in the browser with the ability to share modules. It's also fairly easy to create new nodes.
+			</a>
+			<a href="/neuralcar/" class="project" title="NeuralCar">
+				<img src="screens/neuralcar.png" alt="NeuralCar"/>
+				<div class="label">Name:</div>
+				NeuralCar 2.0 (Open Source)
+				<div class="label">Description:</div>
+				Second version of the car simulation. Each car has a neural network that controls it. Those then go trough generations of evolution till they can drive themself.
+			</a>
+			<a href="http://webreview.squarific.com" class="project" title="WebReviewPlugin">
+				<img src="screens/webreviewplugin.png" alt="Web Review Plugin"/>
+				<div class="label">Name:</div>
+				WebReviewPlugin
+				<div class="label">Description:</div>
+				A chrome plugin that easily lets you search reviews for websites and review websites yourself. 
+			</a>
 		</div>
 	</body>
 </html>

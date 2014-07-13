@@ -1,9 +1,15 @@
 body {
 	font-family: 'Orbitron', sans-serif;
 	background:rgb(57, 64, 66);
+	margin:0;
+	padding:0;
+}
+.wrapper {
+	display:inline-block;
+	position:relative;
 }
 #changeSettings { 
-	position:fixed;
+	position:absolute;
 	right:20px;
 	top:10px;
 	width:30%;
@@ -11,7 +17,7 @@ body {
 	background:rgba(39, 46, 75, 0.53);
 	border:1px solid rgb(147, 157, 163);
 	border-bottom:none;
-	height:105px;
+	height:150px;
 	color:white;
 	font-size:14px;
 	padding:5px;
@@ -30,9 +36,9 @@ body {
 	font-size:16px;
 }
 #console {
-	position:fixed;
+	position:absolute;
 	right:20px;
-	top:125px;
+	top:171px;
 	width:30%;
 	min-width:200px;
 	background:rgba(39, 46, 75, 0.53);
@@ -191,6 +197,10 @@ a:hover {
 	transition-duration: .2s;
 	-webkit-transition-duration: .2s;
 	border-bottom:3px solid #254A59;
+}
+.equalmargin {
+	margin:0;
+	margin-bottom:3px;
 }
 .settings-gobutton:hover {
 	background:#407185;
