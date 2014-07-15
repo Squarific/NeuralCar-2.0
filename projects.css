@@ -8,10 +8,11 @@
 }
 .projects {
 	border-top:3px solid rgb(180, 35, 35);
-	font-family: 'Arapey', sans-serif;
 	text-align:center;
 	padding:20px;
+	padding-top:10px;
 	background:white;
+	font-family: 'Arapey', sans-serif;
 }
 .project {
 	display:inline-block;

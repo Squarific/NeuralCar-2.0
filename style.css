@@ -27,8 +27,11 @@ body {
 	position:absolute;
 	left:0;
 	top:0;
+	box-sizing:border-box;
 	min-width:100%;
 	min-height:100%;
+	padding:40px;
+	padding-top:0;
 	text-align:center;
 	background:#3F82A6;
 	color:white;
@@ -181,9 +184,10 @@ a:hover {
 	background:rgb(34, 216, 114);
 }
 .category {
-	margin:30px;
+	margin:8px;
 	background:#407185;
-	padding:10px;
+	padding:4px;
+	padding-top:10px;
 	display:inline-block;
 	vertical-align:text-top;
 }
