@@ -4,10 +4,10 @@ NeuralCar 2.0
 A rewritten version of the evolutionairy neural network driven car simulation.
 Pure js that runs on almost every browser.
 
-Example:
+Demo/Example:
 ========
 
-http://squarific.github.io/NeuralCar-2.0/
+http://www.squarific.com/neuralcar
 
 Todo:
 =====
