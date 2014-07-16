@@ -50,9 +50,13 @@ if (!Function.prototype.bind) {
 var SQUARIFIC = SQUARIFIC || {};
 
 SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, settings, board) {
-	window.onbeforeunload = function () {
-		return "Be carefull, if you leave this page your simulation will end!";
-	};
+	// After five minutes we start losing too much work
+	// warn in case of accidental navigation
+	setTimeout(function () {
+		window.onbeforeunload = function () {
+			return "Carefull: leaving will result in loss of work.";
+		};
+	}, 5 * 60 * 1000);
 	this.setSettings = function defaultSettings (s) {
 		settings = s = s || {};
 		settings.ai = s.ai = s.ai || {};
