@@ -10,7 +10,7 @@ body {
 }
 #changeSettings { 
 	position:absolute;
-	right:20px;
+	right:70px;
 	top:10px;
 	width:30%;
 	min-width:200px;
@@ -40,7 +40,7 @@ body {
 }
 #console {
 	position:absolute;
-	right:20px;
+	right:70px;
 	top:171px;
 	width:30%;
 	min-width:200px;
