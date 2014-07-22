@@ -560,7 +560,7 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 				ignored++;
 				continue;
 			}
-			if (k < keepInTop) {
+			if (k - ignored < keepInTop) {
 				carArray[k].lastScore = carArray[k].score;
 				carArray[k].score = 0;
 				carArray[k].bestLength++;
