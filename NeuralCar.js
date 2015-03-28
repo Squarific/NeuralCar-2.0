@@ -104,6 +104,10 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 		this.runSpeed = parseFloat(s.runSpeed) || 1;
 	}
 	this.setSettings(settings);
+
+	SQUARIFIC.RegexBrain.prototype = new SQUARIFIC.Brain({}, settings);
+
+	setRegexBrainPrototype();
 	
 	this.console = new SQUARIFIC.Console(console);
 	this.board = new SQUARIFIC.Board(board, settings, this);
@@ -164,6 +168,75 @@ SQUARIFIC.NeuralCar = function NeuralCar (backCanvas, frontCanvas, console, sett
 	};
 };
 
+function setRegexBrainPrototype () {
+	SQUARIFIC.RegexBrain.prototype.getInput = function getInput (car, board, cars) {
+		var boardString = this.toAlphanumericString(this.blockVision(car, board, cars));
+
+		var turnLeft = this.regexes.turnLeft.exec(boardString);
+		var turnRight = this.regexes.turnRight.exec(boardString);
+		
+		var speedUp = this.regexes.speedUp.exec(boardString);
+		var speedDown = this.regexes.speedDown.exec(boardString);
+
+		var turning = turnLeft ? -1 : 0;
+		turning += turnRight ? 1 : 0;
+
+		var acceleration = speedUp ? 1 : 0;
+		acceleration += speedDown ? -1 : 0;
+
+		return {
+			acceleration: acceleration,
+			turning: turning
+		};
+	};
+
+	SQUARIFIC.RegexBrain.prototype.mutate = function mutate (regexes, mutationRate) {
+		// Return a copy of the regexes with the given mutationRate
+		var copys = {};
+		for (var rKey in regexes) {
+			copys[rKey] = this.mutatedRegExp(regexes[rKey], mutationRate);
+		}
+		return copys;
+	};
+
+	SQUARIFIC.RegexBrain.prototype.mutatedRegExp = function mutatedRegExp (regex, mutationRate) {
+		var characters = "99999999999999zzzzzzzzzzzzzz+*^$?.|!-";
+		var source = regex.source;
+		mutationRate = mutationRate / 5;
+		var changes = Math.ceil(mutationRate * source.length) + 5;
+		var newSource;
+		while (changes > 0) {
+			// We add 5 places to the array length, if we have to change one of those
+			// locations we add a new character at a random position instead of changing one
+			var location = Math.floor(Math.random() * (source.length + 5));
+			if (location >= source.length) {
+				var location = Math.floor(Math.random() * source.length);
+				newSource = source.slice(0, location) + characters[Math.floor(Math.random() * characters.length)] + source.slice(location);
+			} else {
+				newSource = source.slice(0, location) + characters[Math.floor(Math.random() * characters.length)] + source.slice(location + 1);
+			}
+
+			try {
+				new RegExp(newSource);
+				source = newSource;
+			} catch (e) {}
+
+			changes--;
+		}
+		return new RegExp(source);
+	};
+
+	SQUARIFIC.RegexBrain.prototype.getNetwork = function getNetwork () {
+		// Synonym of getRegexes
+		return this.regexes;
+	};
+
+	SQUARIFIC.RegexBrain.prototype.setNetwork = function setNetwork (regexes) {
+		// Synonym of setRegexes
+		this.regexes = regexes;
+	};
+}
+
 SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 	function createNetwork (settings) {
 		var net = [];
@@ -198,6 +271,7 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 		network = net;
 	};
 	this.mutate = function mutate (network, rate) {
+		// Return a copy of the given network mutated at the given rate
 		var net = [];
 		for (var k = 0; k < network.length; k++) {
 			net[k] = [];
@@ -273,6 +347,7 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 		
 		return nodes;
 	};
+
 	this.blockVision = function blockVision (car, board, cars) {
 		var nodes = [];
 		var pixels = [];
@@ -371,6 +446,65 @@ SQUARIFIC.Brain = function Brain (network, settings, neuralCarInstance) {
 			for (var k = 0; k < 22; k++) {
 				nodes.push(0);
 			}
+		}
+		
+		return nodes;
+	};
+
+	this.toAlphanumericString = function toAlphanumericString (nodes) {
+		var string = "";
+		for (var k = 0; k < nodes.length; k++) {
+			string += Math.round(nodes[k] * 35).toString(36);
+		}
+		return string;
+	};
+};
+
+SQUARIFIC.RegexBrain = function RegexBrain (network, settings, neuralCarInstance) {
+	this.regexes = {
+		turnLeft: new RegExp("Z"),
+		turnRight: new RegExp("Z"),
+		speedUp: new RegExp("Z"),
+		speedDown: new RegExp("Z")
+	};
+
+	this.regexes = this.mutate(this.regexes, settings.mutationRate);
+
+	this.blockVision = function blockVision (car, board, cars) {
+		var nodes = [];
+		var pixels = [];
+		var	width = car.image.width,
+			height = car.image.height,
+			startX = -settings.ai.side * settings.ai.blockWidth,
+			startY = -settings.ai.front * settings.ai.blockLength - height / 2,
+			xSteps = settings.ai.blockWidthCount,
+			ySteps = settings.ai.blockLengthCount,
+			xStep = settings.ai.blockWidth / (settings.ai.blockWidthCount - 1),
+			yStep = settings.ai.blockLength / (settings.ai.blockLengthCount - 1),
+			xmodAfter = car.x + width / 2,
+			ymodAfter = car.y + height / 2,
+			angleCos = car.angleCos,
+			angleSin = car.angleSin;
+		for (var x = 0; x < xSteps; x++) {
+			for (var y = 0; y < ySteps; y++) {
+				var coords = [startX + x * xStep, startY + y * yStep];
+				var xCoord = coords[0];
+				
+				coords[0] = coords[0] * angleCos - coords[1] * angleSin;
+				coords[1] = xCoord * angleSin + coords[1] * angleCos;
+				coords[0] = Math.round(coords[0] + xmodAfter);
+				coords[1] = Math.round(coords[1] + ymodAfter);
+				
+				coords[0] = board.ensureCoordInRange(coords[0], board.width);
+				coords[1] = board.ensureCoordInRange(coords[1], board.height);
+				
+				pixels.push(coords);
+				nodes.push(board.board[coords[0]][coords[1]]);
+			}
+		}
+
+		if (settings.debugging.drawVisionPixels) {
+			neuralCarInstance.screen.drawPixels(pixels, "#65BEC9", true);
 		}
 		
 		return nodes;
@@ -608,7 +742,11 @@ SQUARIFIC.CarCollection = function CarCollection (carArray, settings, neuralCarI
 		return carArray;
 	};
 	for (var k = 0; k < settings.cars; k++) {
-		this.add(new SQUARIFIC.Car(new SQUARIFIC.Brain(undefined, settings, neuralCarInstance), settings), true);
+		if (settings.useRegex) {
+			this.add(new SQUARIFIC.Car(new SQUARIFIC.RegexBrain(undefined, settings, neuralCarInstance), settings), true);
+		} else {
+			this.add(new SQUARIFIC.Car(new SQUARIFIC.Brain(undefined, settings, neuralCarInstance), settings), true);
+		}
 	}
 };
 

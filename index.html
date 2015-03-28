@@ -14,6 +14,7 @@
 			var ga = ga || function () {};
 			var neuralCarSettingsObject = {
 				cars: {type: "number", value: 100, min: 0, help: "Amount of cars."},
+				useRegex: {type: "switch", value: false, help: "Use a regex instead of a neural network."},
 				runSpeed: {type: "float", value: 1, help: "How fast the simulation runs (higher than 10 is not advisable unless you have a very strong overclocked cpu)"},
 				stepSize: {type: "number", value: Math.round(1000 / 15), min: 1, help: "Ms per physics frame"},
 				generationTime: {type: "number", value: 15000, min: 1, help: "Ms per generation"},
